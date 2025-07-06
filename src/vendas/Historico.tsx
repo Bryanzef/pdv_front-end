@@ -1,24 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios, { AxiosResponse } from 'axios';
 import { jsPDF } from 'jspdf';
-import Modal from './Modal';
-
-interface Item {
-  nome: string;
-  quantidade: number;
-  preco: number;
-  precoOriginal?: number;
-  tipo: string;
-  justificativa?: string;
-  subtotal: number;
-}
-
-interface Venda {
-  _id: string;
-  data: string;
-  itens: Item[];
-  total: number;
-}
+import Modal from '../shared/Modal';
+import type {  Venda } from './types';
 
 const Historico: React.FC = () => {
   const [vendas, setVendas] = useState<Venda[]>([]);

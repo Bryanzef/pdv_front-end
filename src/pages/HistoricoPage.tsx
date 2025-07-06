@@ -1,4 +1,4 @@
-import Historico from '../components/Historico';
+import Historico from '../historico/Historico';
 
 export default function HistoricoPage() {
   return (

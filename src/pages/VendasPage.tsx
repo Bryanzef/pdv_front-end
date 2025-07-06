@@ -1,4 +1,4 @@
-import Vendas from '../components/Vendas';
+import Vendas from '../vendas/Vendas';
 
 export default function VendasPage() {
   return (
