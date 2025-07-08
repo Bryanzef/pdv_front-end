@@ -1,10 +1,11 @@
 import { NavLink } from 'react-router-dom';
 import { Dispatch, SetStateAction } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 const menu = [
-  { to: '/', icon: '🍉', label: 'Vendas' },
-  { to: '/produtos', icon: '📦', label: 'Gerenciar Produtos' },
-  { to: '/historico', icon: '📈', label: 'Histórico de Vendas' },
+  { to: '/', icon: '🍉', label: 'Vendas', adminOnly: false },
+  { to: '/produtos', icon: '📦', label: 'Gerenciar Produtos', adminOnly: true },
+  { to: '/historico', icon: '📈', label: 'Histórico de Vendas', adminOnly: false },
 ];
 
 interface SidebarProps {
@@ -13,6 +14,11 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ minimizada, setMinimizada }) => {
+  const { usuario } = useAuth();
+  
+  // Filtrar menu baseado no role do usuário
+  const menuFiltrado = menu.filter(item => !item.adminOnly || usuario?.role === 'admin');
+  
   return (
     <aside
       className={`fixed top-0 left-0 h-full z-40 bg-gradient-to-b from-green-700 to-green-900 text-white shadow-lg flex flex-col transition-all duration-300
@@ -30,7 +36,7 @@ const Sidebar: React.FC<SidebarProps> = ({ minimizada, setMinimizada }) => {
         </button>
       </div>
       <nav className="flex-1 py-8 px-2 space-y-2">
-        {menu.map((item) => (
+        {menuFiltrado.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}

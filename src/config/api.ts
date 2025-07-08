@@ -16,6 +16,12 @@ const api: AxiosInstance = axios.create({
 // Interceptor para requisições
 api.interceptors.request.use(
   (config) => {
+    // Adicionar token de autenticação se disponível
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    
     console.log(`🚀 Requisição: ${config.method?.toUpperCase()} ${config.url}`);
     return config;
   },
@@ -39,7 +45,17 @@ api.interceptors.response.use(
     });
 
     // Tratamento específico de erros
-    if (error.response?.status === 404) {
+    if (error.response?.status === 401) {
+      console.error('🔐 Token inválido ou expirado');
+      // Remover token inválido
+      localStorage.removeItem('token');
+      // Redirecionar para login se estiver em uma página protegida
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+    } else if (error.response?.status === 403) {
+      console.error('🚫 Acesso negado');
+    } else if (error.response?.status === 404) {
       console.error('🔍 Recurso não encontrado');
     } else if (error.response?.status === 500) {
       console.error('💥 Erro interno do servidor');
