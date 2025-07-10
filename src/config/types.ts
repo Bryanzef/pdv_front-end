@@ -20,4 +20,14 @@ export interface PaginatedResponse<T> {
   page: number;
   limit: number;
   totalPages: number;
+}
+
+export interface Usuario {
+  _id: string;
+  nome: string;
+  email: string;
+  role: 'admin' | 'usuario';
+  ativo: boolean;
+  dataCriacao: string;
+  ultimoLogin?: string;
 } 

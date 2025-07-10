@@ -1,11 +1,11 @@
 import api from '../../config/api';
-import type { Produto } from '../types';
 import type { ApiResponse } from '../../config/types';
+import type { Produto } from '../types';
 
-export async function getProdutos(): Promise<Produto[]> {
+export async function getProdutos(page = 1, limit = 10) {
   try {
-    const response = await api.get<Produto[]>('/produtos');
-    return response.data;
+    const response = await api.get('/produtos', { params: { page, limit } });
+    return response.data; // { data, total, page, totalPages }
   } catch (error) {
     console.error('Erro ao buscar produtos:', error);
     throw error;

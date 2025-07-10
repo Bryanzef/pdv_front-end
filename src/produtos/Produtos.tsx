@@ -1,8 +1,8 @@
 import React from 'react';
 import Modal from '../shared/Modal';
-import { useProdutos } from './hooks/useProdutos';
 import FormularioProduto from './components/FormularioProduto';
 import TabelaProdutos from './components/TabelaProdutos';
+import { useProdutos } from './hooks/useProdutos';
 
 const Produtos: React.FC = () => {
   const {
@@ -21,7 +21,11 @@ const Produtos: React.FC = () => {
     setModalExcluir,
     cadastrarOuAtualizar,
     editarProduto,
-    excluirProduto
+    excluirProduto,
+    page,
+    setPage,
+    total,
+    totalPages
   } = useProdutos();
 
   return (
@@ -50,6 +54,10 @@ const Produtos: React.FC = () => {
         setFiltro={setFiltro}
         editarProduto={editarProduto}
         setModalExcluir={setModalExcluir}
+        page={page}
+        setPage={setPage}
+        total={total}
+        totalPages={totalPages}
       />
       <Modal
         isOpen={modalExcluir !== null}

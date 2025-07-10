@@ -13,6 +13,10 @@ export interface Venda {
   data: string;
   itens: Item[];
   total: number;
+  usuario?: {
+    nome: string;
+    email: string;
+  };
 }
 
 export interface Produto {

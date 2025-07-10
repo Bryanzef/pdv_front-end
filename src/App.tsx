@@ -1,11 +1,12 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
-import LayoutBase from './layout/LayoutBase';
+import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import Login from './components/Login';
 import ProtectedRoute from './components/ProtectedRoute';
-import VendasPage from './pages/VendasPage';
-import ProdutosPage from './pages/ProdutosPage';
+import { AuthProvider } from './contexts/AuthContext';
+import LayoutBase from './layout/LayoutBase';
 import HistoricoPage from './pages/HistoricoPage';
+import ProdutosPage from './pages/ProdutosPage';
+import UsuariosPage from './pages/UsuariosPage';
+import VendasPage from './pages/VendasPage';
 
 const App: React.FC = () => {
   return (
@@ -31,6 +32,13 @@ const App: React.FC = () => {
             <ProtectedRoute>
               <LayoutBase>
                 <HistoricoPage />
+              </LayoutBase>
+            </ProtectedRoute>
+          } />
+          <Route path="/usuarios" element={
+            <ProtectedRoute requireAdmin>
+              <LayoutBase>
+                <UsuariosPage />
               </LayoutBase>
             </ProtectedRoute>
           } />

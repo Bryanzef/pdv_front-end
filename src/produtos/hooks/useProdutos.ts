@@ -1,10 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
+import { deleteProduto, getProdutos, postProduto, putProduto } from '../services/produtosApi';
 import type { Produto } from '../types';
-import { getProdutos, putProduto, postProduto, deleteProduto } from '../services/produtosApi';
 
 export function useProdutos() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
+  const [page, setPage] = useState<number>(1);
+  const [total, setTotal] = useState<number>(0);
+  const [totalPages, setTotalPages] = useState<number>(1);
   const [nome, setNome] = useState<string>('');
   const [preco, setPreco] = useState<string>('');
   const [tipo, setTipo] = useState<'peso' | 'fixo'>('peso');
@@ -14,13 +17,15 @@ export function useProdutos() {
   const [modalExcluir, setModalExcluir] = useState<string | null>(null);
 
   useEffect(() => {
-    carregarProdutos();
-  }, []);
+    carregarProdutos(page);
+  }, [page]);
 
-  async function carregarProdutos() {
+  async function carregarProdutos(pagina = 1) {
     try {
-      const data = await getProdutos();
+      const { data, total, totalPages } = await getProdutos(pagina, 10);
       setProdutos(data);
+      setTotal(total);
+      setTotalPages(totalPages);
     } catch {
       setFeedback('Erro ao carregar produtos');
     }
@@ -75,6 +80,10 @@ export function useProdutos() {
 
   return {
     produtos,
+    page,
+    setPage,
+    total,
+    totalPages,
     nome,
     setNome,
     preco,

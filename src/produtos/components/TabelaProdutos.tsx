@@ -7,9 +7,13 @@ interface TabelaProdutosProps {
   setFiltro: (v: string) => void;
   editarProduto: (produto: Produto) => void;
   setModalExcluir: (id: string) => void;
+  page: number;
+  setPage: (p: number) => void;
+  total: number;
+  totalPages: number;
 }
 
-const TabelaProdutos: React.FC<TabelaProdutosProps> = ({ produtos, filtro, setFiltro, editarProduto, setModalExcluir }) => (
+const TabelaProdutos: React.FC<TabelaProdutosProps> = ({ produtos, filtro, setFiltro, editarProduto, setModalExcluir, page, setPage, total, totalPages }) => (
   <div>
     <h2 className="text-xl font-bold mt-6 mb-2">Lista de Produtos</h2>
     <input
@@ -57,6 +61,21 @@ const TabelaProdutos: React.FC<TabelaProdutosProps> = ({ produtos, filtro, setFi
             ))}
         </tbody>
       </table>
+    </div>
+    <div className="flex justify-between items-center mt-4">
+      <span className="text-sm text-gray-600">Página {page} de {totalPages} ({total} produtos)</span>
+      <div className="flex gap-2">
+        <button
+          className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+          onClick={() => setPage(page - 1)}
+          disabled={page <= 1}
+        >Anterior</button>
+        <button
+          className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+          onClick={() => setPage(page + 1)}
+          disabled={page >= totalPages}
+        >Próxima</button>
+      </div>
     </div>
   </div>
 );
