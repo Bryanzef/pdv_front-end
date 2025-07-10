@@ -1,8 +1,8 @@
 import React from 'react';
 import Modal from '../shared/Modal';
-import { useVendas } from './hooks/useVendas';
 import FormularioProduto from './components/FormularioProduto';
 import TabelaCarrinho from './components/TabelaCarrinho';
+import { useVendas } from './hooks/useVendas';
 
 const Vendas: React.FC = () => {
   const {
@@ -22,7 +22,8 @@ const Vendas: React.FC = () => {
     salvarEdicao,
     removerItem,
     finalizarVenda,
-    cancelarVenda
+    cancelarVenda,
+    setModalOpen // garantir que está disponível
   } = useVendas();
 
   return (
@@ -69,40 +70,63 @@ const Vendas: React.FC = () => {
           onClose={() => setModalOpen(null)}
           title="Editar Item"
           content={
-            <div>
-              <label>Quantidade:</label>
-              <input
-                id="editarQuantidade"
-                type="number"
-                defaultValue={editItem.quantidade}
-                className="border p-2 w-full rounded mb-2"
-              />
-              <label>Preço:</label>
-              <input
-                id="editarPreco"
-                type="number"
-                defaultValue={editItem.preco}
-                className="border p-2 w-full rounded mb-2"
-              />
-              <label>Justificativa (se alterar preço):</label>
-              <input
-                id="justificativaPreco"
-                type="text"
-                defaultValue={editItem.justificativa || ''}
-                className="border p-2 w-full rounded mb-2"
-              />
-              <button
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mt-2"
-                onClick={() => {
-                  const quantidade = parseFloat((document.getElementById('editarQuantidade') as HTMLInputElement).value);
-                  const preco = parseFloat((document.getElementById('editarPreco') as HTMLInputElement).value);
-                  const justificativa = (document.getElementById('justificativaPreco') as HTMLInputElement).value;
-                  salvarEdicao(quantidade, preco, justificativa);
-                }}
-              >Salvar</button>
-            </div>
+            <form
+              onSubmit={e => {
+                e.preventDefault();
+                const quantidade = parseFloat((document.getElementById('editarQuantidade') as HTMLInputElement).value);
+                const preco = parseFloat((document.getElementById('editarPreco') as HTMLInputElement).value);
+                const justificativa = (document.getElementById('justificativaPreco') as HTMLInputElement).value;
+                salvarEdicao(quantidade, preco, justificativa);
+                setModalOpen(null);
+              }}
+              className="space-y-3"
+            >
+              <div>
+                <label className="block mb-1 font-medium">Quantidade:</label>
+                <input
+                  id="editarQuantidade"
+                  type="number"
+                  step="any"
+                  min="0.001"
+                  defaultValue={editItem.quantidade}
+                  className="border p-2 w-full rounded focus:ring-2 focus:ring-green-400 dark:bg-gray-900 dark:text-gray-100"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block mb-1 font-medium">Preço:</label>
+                <input
+                  id="editarPreco"
+                  type="number"
+                  step="any"
+                  min="0.01"
+                  defaultValue={editItem.preco}
+                  className="border p-2 w-full rounded focus:ring-2 focus:ring-green-400 dark:bg-gray-900 dark:text-gray-100"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block mb-1 font-medium">Justificativa (se alterar preço):</label>
+                <input
+                  id="justificativaPreco"
+                  type="text"
+                  defaultValue={editItem.justificativa || ''}
+                  className="border p-2 w-full rounded focus:ring-2 focus:ring-green-400 dark:bg-gray-900 dark:text-gray-100"
+                />
+              </div>
+              <div className="flex gap-2 justify-end mt-4">
+                <button
+                  type="button"
+                  className="bg-gray-400 dark:bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-500 dark:hover:bg-gray-600"
+                  onClick={() => setModalOpen(null)}
+                >Cancelar</button>
+                <button
+                  type="submit"
+                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                >Salvar</button>
+              </div>
+            </form>
           }
-          onConfirm={() => {}}
         />
       )}
       {feedback && (

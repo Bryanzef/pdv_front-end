@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import api from '../config/api';
+import Drawer from '../shared/Drawer';
 import Modal from '../shared/Modal';
+import { gerarPdfVenda } from '../vendas/utils/pdfHelpers';
 import TabelaHistorico from './components/TabelaHistorico';
 import { useHistorico } from './hooks/useHistorico';
 
@@ -38,6 +40,9 @@ const Historico: React.FC = () => {
     }
     fetchUsuarios();
   }, []);
+
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [vendaSelecionada, setVendaSelecionada] = useState<string | null>(null);
 
   return (
     <div className="bg-white p-8 rounded-xl shadow-lg max-w-5xl mx-auto">
@@ -81,36 +86,32 @@ const Historico: React.FC = () => {
         total={total}
         totalPages={totalPages}
         onVisualizar={async (id) => {
+          setVendaSelecionada(id);
+          setDrawerOpen(true);
           setModalDetalhe(id);
           await carregarVendaDetalhe(id);
         }}
       />
-      <Modal
-        isOpen={modalExcluir !== null}
-        onClose={() => setModalExcluir(null)}
-        title="Excluir Venda"
-        content="Deseja excluir esta venda?"
-        onConfirm={excluirVenda}
-      />
-      <Modal
-        isOpen={modalDetalhe !== null}
-        onClose={() => { setModalDetalhe(null); }}
+      <Drawer
+        isOpen={drawerOpen}
+        onClose={() => { setDrawerOpen(false); setVendaSelecionada(null); }}
         title="Detalhes da Venda"
-        content={
-          carregandoDetalhe ? (
-            <div className="p-4 text-center">Carregando detalhes...</div>
-          ) : vendaDetalhe ? (
-            <div>
-              <div className="mb-2 text-sm text-gray-700">
-                <b>Data:</b> {new Date(vendaDetalhe.data).toLocaleString('pt-BR')}<br />
-                {vendaDetalhe.usuario && (
-                  <><b>Usuário:</b> {vendaDetalhe.usuario.nome} ({vendaDetalhe.usuario.email})<br /></>
-                )}
-                <b>Total:</b> R$ {vendaDetalhe.total.toFixed(2)}
-              </div>
+      >
+        {carregandoDetalhe ? (
+          <div className="p-4 text-center">Carregando detalhes...</div>
+        ) : vendaDetalhe ? (
+          <div>
+            <div className="mb-2 text-sm text-gray-700 dark:text-gray-200">
+              <b>Data:</b> {new Date(vendaDetalhe.data).toLocaleString('pt-BR')}<br />
+              {vendaDetalhe.usuario && (
+                <><b>Usuário:</b> {vendaDetalhe.usuario.nome} ({vendaDetalhe.usuario.email})<br /></>
+              )}
+              <b>Total:</b> R$ {vendaDetalhe.total.toFixed(2)}
+            </div>
+            <div className="overflow-x-auto">
               <table className="w-full border-collapse text-sm mt-2">
                 <thead>
-                  <tr className="bg-green-100 text-green-900">
+                  <tr className="bg-green-100 dark:bg-gray-800 text-green-900 dark:text-green-200">
                     <th className="border p-2">Produto</th>
                     <th className="border p-2">Tipo</th>
                     <th className="border p-2">Qtd</th>
@@ -121,7 +122,7 @@ const Historico: React.FC = () => {
                 </thead>
                 <tbody>
                   {vendaDetalhe.itens.map((item, idx) => (
-                    <tr key={idx}>
+                    <tr key={idx} className="dark:bg-gray-900">
                       <td className="border p-2">{item.nome}</td>
                       <td className="border p-2">{item.tipo}</td>
                       <td className="border p-2">{item.quantidade}</td>
@@ -133,11 +134,28 @@ const Historico: React.FC = () => {
                 </tbody>
               </table>
             </div>
-          ) : (
-            <div className="p-4 text-center text-red-700">Não foi possível carregar os detalhes da venda.</div>
-          )
-        }
-        onConfirm={() => setModalDetalhe(null)}
+            <div className="flex justify-end mt-4 gap-2">
+              <button
+                className="bg-gray-700 dark:bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-800 dark:hover:bg-gray-700"
+                onClick={() => {
+                  // TODO: integração futura com impressora não fiscal
+                  gerarPdfVenda(vendaDetalhe.itens, vendaDetalhe.total);
+                }}
+              >
+                <i className="fas fa-print mr-2"></i>Reimprimir
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="p-4 text-center text-red-700 dark:text-red-300">Não foi possível carregar os detalhes da venda.</div>
+        )}
+      </Drawer>
+      <Modal
+        isOpen={modalExcluir !== null}
+        onClose={() => setModalExcluir(null)}
+        title="Excluir Venda"
+        content="Deseja excluir esta venda?"
+        onConfirm={excluirVenda}
       />
     </div>
   );

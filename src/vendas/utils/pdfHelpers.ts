@@ -1,7 +1,7 @@
 import { jsPDF } from 'jspdf';
 import type { ItemCarrinho } from '../types';
 
-export function gerarPdfVenda(carrinho: ItemCarrinho[], total: number) {
+export function gerarPdfVenda(carrinho: Array<ItemCarrinho | import('./../types').Item>, total: number) {
   const doc = new jsPDF();
   doc.setFontSize(16);
   doc.text('Fruteira do Zé - Documento Não Fiscal', 20, 20);
