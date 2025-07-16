@@ -48,6 +48,8 @@ const FormularioProduto: React.FC<FormularioProdutoProps> = ({
           placeholder="Digite o peso (kg) ou quantidade"
         />
         {feedback.includes('Peso/quantidade') && <p className="text-red-600 mt-2">{feedback}</p>}
+      </div>
+      <div className="flex items-end">
         <button
           className="mt-2 bg-blue-600 text-white p-2 rounded w-full hover:bg-blue-700 transition-colors font-semibold shadow"
           onClick={lerPesoBalanca}
@@ -55,15 +57,16 @@ const FormularioProduto: React.FC<FormularioProdutoProps> = ({
           <i className="fas fa-weight-scale mr-2"></i>Ler Peso da Balança
         </button>
       </div>
-      <div className="flex items-end">
-        <button
-          className="bg-green-600 text-white p-2 rounded w-full hover:bg-green-700 transition-colors font-semibold shadow"
-          onClick={adicionarAoCarrinho}
-        >
-          <i className="fas fa-plus mr-2"></i>Adicionar ao Carrinho
-        </button>
-      </div>
     </div>
+    <button
+      className="mt-4 bg-green-600 text-white p-2 rounded w-full hover:bg-green-700 transition-colors font-semibold shadow"
+      onClick={adicionarAoCarrinho}
+    >
+      <i className="fas fa-plus mr-2"></i>Adicionar ao Carrinho
+    </button>
+    {feedback && !feedback.includes('Selecione') && !feedback.includes('Peso/quantidade') && (
+      <div className={`mt-2 p-2 rounded text-center font-medium ${feedback.includes('sucesso') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{feedback}</div>
+    )}
   </div>
 );
 

@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { getProdutos, postVenda } from '../services/vendasApi';
+import type { FormaPagamento, ItemCarrinho, Produto, ProdutoOption } from '../types';
 import { gerarPdfVenda } from '../utils/pdfHelpers';
-import type { Produto, ItemCarrinho, ProdutoOption } from '../types';
 
 export function useVendas() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
@@ -13,11 +13,45 @@ export function useVendas() {
   const [modalOpen, setModalOpen] = useState<string | null>(null);
   const [editItem, setEditItem] = useState<ItemCarrinho & { index: number } | null>(null);
 
+  // Pagamento
+  const [formaPagamento, setFormaPagamento] = useState<FormaPagamento>('dinheiro');
+  const [valorPago, setValorPago] = useState<number>(0);
+  const [troco, setTroco] = useState<number>(0);
+  const [parcelas, setParcelas] = useState<number>(1);
+
   useEffect(() => {
     getProdutos()
-      .then(setProdutos)
+      .then((produtos) => setProdutos(produtos))
       .catch(() => setFeedback('Erro ao carregar produtos'));
   }, []);
+
+  // Atualizar troco automaticamente para dinheiro
+  useEffect(() => {
+    if (formaPagamento === 'dinheiro') {
+      setTroco(valorPago > total ? valorPago - total : 0);
+    } else {
+      setTroco(0);
+    }
+  }, [valorPago, total, formaPagamento]);
+
+  // Validação de pagamento
+  const validarPagamento = () => {
+    if (valorPago < total) {
+      setFeedback('Valor pago não pode ser menor que o total da venda.');
+      return false;
+    }
+    if (formaPagamento === 'credito') {
+      if (parcelas < 1 || parcelas > 12) {
+        setFeedback('Número de parcelas inválido.');
+        return false;
+      }
+      if (total / parcelas < 5) {
+        setFeedback('Valor mínimo por parcela: R$ 5,00.');
+        return false;
+      }
+    }
+    return true;
+  };
 
   const produtoOptions: ProdutoOption[] = produtos.map(p => ({
     value: p.nome,
@@ -101,10 +135,24 @@ export function useVendas() {
       setFeedback('O carrinho está vazio.');
       return;
     }
+    if (!validarPagamento()) return;
     gerarPdfVenda(carrinho, total);
-    await postVenda({ itens: carrinho, total });
+    await postVenda({
+      itens: carrinho,
+      total,
+      pagamento: {
+        forma: formaPagamento,
+        valorPago,
+        troco,
+        parcelas: formaPagamento === 'credito' ? parcelas : undefined
+      }
+    });
     setCarrinho([]);
     setTotal(0);
+    setValorPago(0);
+    setTroco(0);
+    setParcelas(1);
+    setFormaPagamento('dinheiro');
     setModalOpen(null);
     setFeedback('Venda finalizada com sucesso!');
   };
@@ -115,6 +163,9 @@ export function useVendas() {
     setModalOpen(null);
     setFeedback('Venda cancelada.');
   };
+
+  // Para uso no componente de pagamento
+  const valoresPredefinidos = [10, 20, 50, 100];
 
   return {
     produtos,
@@ -138,6 +189,15 @@ export function useVendas() {
     salvarEdicao,
     removerItem,
     finalizarVenda,
-    cancelarVenda
+    cancelarVenda,
+    // Pagamento
+    formaPagamento,
+    setFormaPagamento,
+    valorPago,
+    setValorPago,
+    troco,
+    parcelas,
+    setParcelas,
+    valoresPredefinidos
   };
 } 

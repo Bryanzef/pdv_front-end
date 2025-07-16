@@ -22,10 +22,10 @@ export function useProdutos() {
 
   async function carregarProdutos(pagina = 1) {
     try {
-      const { data, total, totalPages } = await getProdutos(pagina, 10);
-      setProdutos(data);
-      setTotal(total);
-      setTotalPages(totalPages);
+      const { dados } = await getProdutos(pagina, 10);
+      setProdutos(dados.produtos);
+      setTotal(dados.total);
+      setTotalPages(dados.totalPages);
     } catch {
       setFeedback('Erro ao carregar produtos');
     }

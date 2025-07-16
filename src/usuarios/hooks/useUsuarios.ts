@@ -17,10 +17,10 @@ export function useUsuarios() {
   async function carregarUsuarios(pagina = 1) {
     setLoading(true);
     try {
-      const { data, total, totalPages } = await getUsuarios(pagina, 10);
-      setUsuarios(data);
-      setTotal(total);
-      setTotalPages(totalPages);
+      const { dados } = await getUsuarios(pagina, 10);
+      setUsuarios(dados.usuarios);
+      setTotal(dados.total);
+      setTotalPages(dados.totalPages);
       setFeedback('');
     } catch {
       setFeedback('Erro ao carregar usuários');

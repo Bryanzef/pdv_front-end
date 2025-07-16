@@ -1,6 +1,8 @@
 import React from 'react';
 import Modal from '../shared/Modal';
+import FormaPagamento from './components/FormaPagamento';
 import FormularioProduto from './components/FormularioProduto';
+import ResumoVenda from './components/ResumoVenda';
 import TabelaCarrinho from './components/TabelaCarrinho';
 import { useVendas } from './hooks/useVendas';
 
@@ -23,7 +25,16 @@ const Vendas: React.FC = () => {
     removerItem,
     finalizarVenda,
     cancelarVenda,
-    setModalOpen // garantir que está disponível
+    setModalOpen,
+    // Pagamento
+    formaPagamento,
+    setFormaPagamento,
+    valorPago,
+    setValorPago,
+    troco,
+    parcelas,
+    setParcelas,
+    valoresPredefinidos
   } = useVendas();
 
   return (
@@ -47,6 +58,25 @@ const Vendas: React.FC = () => {
         abrirModalEditar={abrirModalEditar}
         removerItem={removerItem}
       />
+      <FormaPagamento
+        formaPagamento={formaPagamento}
+        setFormaPagamento={setFormaPagamento}
+        valorPago={valorPago}
+        setValorPago={setValorPago}
+        troco={troco}
+        parcelas={parcelas}
+        setParcelas={setParcelas}
+        total={total}
+        valoresPredefinidos={valoresPredefinidos}
+      />
+      <ResumoVenda
+        quantidadeTotal={carrinho.reduce((acc, item) => acc + item.quantidade, 0)}
+        subtotal={carrinho.reduce((acc, item) => acc + item.subtotal, 0)}
+        desconto={0}
+        total={total}
+        formaPagamento={formaPagamento}
+        troco={troco}
+      />
       <div className="flex justify-between items-center mt-4">
         <span className="text-xl font-bold">Total: R$ {total.toFixed(2)}</span>
         <div className="flex gap-2">
@@ -55,6 +85,16 @@ const Vendas: React.FC = () => {
             onClick={finalizarVenda}
           >
             <i className="fas fa-check mr-2"></i>Finalizar Venda
+          </button>
+          <button
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors font-semibold shadow"
+            onClick={() => {
+              import('./utils/pdfHelpers').then(({ gerarPdfVenda }) => {
+                gerarPdfVenda(carrinho, total);
+              });
+            }}
+          >
+            <i className="fas fa-print mr-2"></i>Imprimir Cupom
           </button>
           <button
             className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 transition-colors font-semibold shadow"

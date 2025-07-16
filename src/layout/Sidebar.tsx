@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const menu = [
-  { to: '/', icon: '🍉', label: 'Vendas', adminOnly: false },
+  { to: '/vendas', icon: '🍉', label: 'Vendas', adminOnly: false },
   { to: '/produtos', icon: '📦', label: 'Gerenciar Produtos', adminOnly: true },
   { to: '/historico', icon: '📈', label: 'Histórico de Vendas', adminOnly: false },
 ];

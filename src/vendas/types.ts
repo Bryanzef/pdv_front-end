@@ -8,11 +8,21 @@ export interface Item {
   subtotal: number;
 }
 
+export type FormaPagamento = 'dinheiro' | 'debito' | 'credito' | 'pix';
+
+export interface Pagamento {
+  forma: FormaPagamento;
+  valorPago: number;
+  troco?: number;
+  parcelas?: number;
+}
+
 export interface Venda {
   _id: string;
   data: string;
   itens: Item[];
   total: number;
+  pagamento?: Pagamento;
   usuario?: {
     nome: string;
     email: string;

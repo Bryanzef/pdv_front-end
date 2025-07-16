@@ -3,7 +3,7 @@ import Login from './components/Login';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './contexts/AuthContext';
 import LayoutBase from './layout/LayoutBase';
-import HistoricoPage from './pages/HistoricoPage';
+import HomePage from './pages/HomePage';
 import ProdutosPage from './pages/ProdutosPage';
 import UsuariosPage from './pages/UsuariosPage';
 import VendasPage from './pages/VendasPage';
@@ -17,6 +17,13 @@ const App: React.FC = () => {
           <Route path="/" element={
             <ProtectedRoute>
               <LayoutBase>
+                <HomePage />
+              </LayoutBase>
+            </ProtectedRoute>
+          } />
+          <Route path="/vendas" element={
+            <ProtectedRoute>
+              <LayoutBase>
                 <VendasPage />
               </LayoutBase>
             </ProtectedRoute>
@@ -25,13 +32,6 @@ const App: React.FC = () => {
             <ProtectedRoute requireAdmin>
               <LayoutBase>
                 <ProdutosPage />
-              </LayoutBase>
-            </ProtectedRoute>
-          } />
-          <Route path="/historico" element={
-            <ProtectedRoute>
-              <LayoutBase>
-                <HistoricoPage />
               </LayoutBase>
             </ProtectedRoute>
           } />

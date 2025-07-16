@@ -13,7 +13,7 @@ export interface ApiError {
   details?: any;
 }
 
-// Tipos para paginação (se necessário no futuro)
+// Tipos para paginação 
 export interface PaginatedResponse<T> {
   data: T[];
   total: number;
