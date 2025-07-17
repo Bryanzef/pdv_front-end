@@ -63,18 +63,24 @@ export function useProdutos() {
     setPreco(produto.preco.toString());
     setTipo(produto.tipo);
     setEditandoId(produto._id);
+    // estoque e ativo não são editados diretamente pelo formulário padrão, mas podem ser usados em componentes futuros
     setFeedback('');
   }
 
   async function excluirProduto() {
     if (!modalExcluir) return;
     try {
-      await deleteProduto(modalExcluir);
-      setProdutos(produtos.filter(p => p._id !== modalExcluir));
+      const response = await deleteProduto(modalExcluir);
+      if (!response.success) {
+        setFeedback(response.message || 'Erro ao excluir produto');
+      } else {
+        setProdutos(produtos.filter(p => p._id !== modalExcluir));
+        setFeedback('Produto excluído com sucesso.');
+      }
       setModalExcluir(null);
-      setFeedback('Produto excluído com sucesso.');
-    } catch {
+    } catch (err: any) {
       setFeedback('Erro ao excluir produto');
+      setModalExcluir(null);
     }
   }
 

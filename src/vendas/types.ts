@@ -1,3 +1,5 @@
+import type { Produto as ProdutoType } from '../produtos/types';
+
 export interface Item {
   nome: string;
   quantidade: number;
@@ -12,8 +14,8 @@ export type FormaPagamento = 'dinheiro' | 'debito' | 'credito' | 'pix';
 
 export interface Pagamento {
   forma: FormaPagamento;
-  valorPago: number;
-  troco?: number;
+  valorPago: string; // Decimal como string
+  troco?: string | null;
   parcelas?: number;
 }
 
@@ -21,7 +23,9 @@ export interface Venda {
   _id: string;
   data: string;
   itens: Item[];
-  total: number;
+  total: string; // Decimal como string
+  valorPago: string; // Decimal como string
+  troco?: string | null;
   pagamento?: Pagamento;
   usuario?: {
     nome: string;
@@ -29,15 +33,7 @@ export interface Venda {
   };
 }
 
-export interface Produto {
-  _id: string;
-  nome: string;
-  preco: number;
-  tipo: 'peso' | 'fixo';
-  imagem: string;
-}
-
-export interface ItemCarrinho extends Produto {
+export interface ItemCarrinho extends ProdutoType {
   quantidade: number;
   subtotal: number;
   precoOriginal: number;
@@ -47,7 +43,7 @@ export interface ItemCarrinho extends Produto {
 export interface ProdutoOption {
   value: string;
   label: string;
-  produto: Produto;
+  produto: ProdutoType;
 }
 
 declare global {

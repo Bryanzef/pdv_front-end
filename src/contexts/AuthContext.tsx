@@ -1,15 +1,5 @@
-import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
-
-// Tipos
-export interface Usuario {
-  _id: string;
-  nome: string;
-  email: string;
-  role: 'admin' | 'usuario';
-  ativo: boolean;
-  dataCriacao: string;
-  ultimoLogin?: string;
-}
+import React, { createContext, ReactNode, useContext, useEffect, useReducer } from 'react';
+import type { Usuario } from '../config/types';
 
 interface AuthState {
   usuario: Usuario | null;
@@ -19,7 +9,7 @@ interface AuthState {
 }
 
 interface AuthContextType extends AuthState {
-  login: (email: string, senha: string) => Promise<void>;
+  login: (email: string, senha: string, lembrar?: boolean) => Promise<void>;
   logout: () => void;
   registrar: (nome: string, email: string, senha: string, role?: 'admin' | 'usuario') => Promise<void>;
   alterarSenha: (senhaAtual: string, novaSenha: string) => Promise<void>;
@@ -131,7 +121,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   // Login
-  const login = async (email: string, senha: string) => {
+  const login = async (email: string, senha: string, lembrar = false) => {
     try {
       dispatch({ type: 'LOGIN_INICIADO' });
 
@@ -156,6 +146,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           token: data.dados.token
         }
       });
+      if (lembrar) {
+        localStorage.setItem('token', data.dados.token);
+        localStorage.setItem('token_expira', (Date.now() + 24 * 60 * 60 * 1000).toString());
+      } else {
+        localStorage.setItem('token', data.dados.token);
+        localStorage.removeItem('token_expira');
+      }
     } catch (error) {
       dispatch({ type: 'LOGIN_ERRO' });
       throw error;
@@ -248,6 +245,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Verificar token na inicialização
   useEffect(() => {
     verificarToken();
+  }, []);
+
+  // No carregamento do app, verificar se o token está válido
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const expira = localStorage.getItem('token_expira');
+    if (token && expira) {
+      if (Date.now() > Number(expira)) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('token_expira');
+        dispatch({ type: 'LOGOUT' });
+      } else if (state.usuario) {
+        // Token ainda válido, manter usuário autenticado
+        dispatch({ type: 'TOKEN_VERIFICADO', payload: { usuario: state.usuario, token } });
+      }
+    }
   }, []);
 
   const value: AuthContextType = {

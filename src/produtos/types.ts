@@ -3,5 +3,6 @@ export interface Produto {
   nome: string;
   preco: number;
   tipo: 'peso' | 'fixo';
-  imagem: string;
+  estoque: number;
+  ativo: boolean;
 } 

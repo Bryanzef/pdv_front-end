@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import type { Produto } from '../../produtos/types';
 import { getProdutos, postVenda } from '../services/vendasApi';
-import type { FormaPagamento, ItemCarrinho, Produto, ProdutoOption } from '../types';
+import type { FormaPagamento, ItemCarrinho, ProdutoOption } from '../types';
 import { gerarPdfVenda } from '../utils/pdfHelpers';
+import { validarPagamentoVenda } from '../utils/validacaoVenda';
 
 export function useVendas() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
@@ -15,7 +17,8 @@ export function useVendas() {
 
   // Pagamento
   const [formaPagamento, setFormaPagamento] = useState<FormaPagamento>('dinheiro');
-  const [valorPago, setValorPago] = useState<number>(0);
+  const [valorPagoInput, setValorPagoInput] = useState<string>('');
+  const valorPago = parseFloat(valorPagoInput.replace(',', '.')) || 0;
   const [troco, setTroco] = useState<number>(0);
   const [parcelas, setParcelas] = useState<number>(1);
 
@@ -34,28 +37,9 @@ export function useVendas() {
     }
   }, [valorPago, total, formaPagamento]);
 
-  // Validação de pagamento
-  const validarPagamento = () => {
-    if (valorPago < total) {
-      setFeedback('Valor pago não pode ser menor que o total da venda.');
-      return false;
-    }
-    if (formaPagamento === 'credito') {
-      if (parcelas < 1 || parcelas > 12) {
-        setFeedback('Número de parcelas inválido.');
-        return false;
-      }
-      if (total / parcelas < 5) {
-        setFeedback('Valor mínimo por parcela: R$ 5,00.');
-        return false;
-      }
-    }
-    return true;
-  };
-
   const produtoOptions: ProdutoOption[] = produtos.map(p => ({
     value: p.nome,
-    label: `${p.imagem} ${p.nome} - R$ ${p.preco.toFixed(2)} (${p.tipo === 'peso' ? 'kg' : 'un'})`,
+    label: `${p.nome} - R$ ${p.preco.toFixed(2)} (${p.tipo === 'peso' ? 'kg' : 'un'})`,
     produto: p
   }));
 
@@ -135,21 +119,28 @@ export function useVendas() {
       setFeedback('O carrinho está vazio.');
       return;
     }
-    if (!validarPagamento()) return;
+    if (!validarPagamentoVenda({ formaPagamento, valorPagoInput, total, parcelas, setFeedback })) return;
     gerarPdfVenda(carrinho, total);
+    // Corrigir: garantir que cada item tenha productId e preco como string
+    const itensParaEnviar = carrinho.map(item => ({
+      nome: item.nome,
+      preco: item.preco.toFixed(2), // string
+      quantidade: item.quantidade,
+      productId: item._id
+    }));
     await postVenda({
-      itens: carrinho,
-      total,
+      itens: itensParaEnviar,
+      total: total.toFixed(2), // string
       pagamento: {
         forma: formaPagamento,
-        valorPago,
-        troco,
+        valorPago: valorPago.toFixed(2),
+        troco: troco ? troco.toFixed(2) : undefined,
         parcelas: formaPagamento === 'credito' ? parcelas : undefined
       }
     });
     setCarrinho([]);
     setTotal(0);
-    setValorPago(0);
+    setValorPagoInput('');
     setTroco(0);
     setParcelas(1);
     setFormaPagamento('dinheiro');
@@ -193,8 +184,8 @@ export function useVendas() {
     // Pagamento
     formaPagamento,
     setFormaPagamento,
-    valorPago,
-    setValorPago,
+    valorPago: valorPagoInput,
+    setValorPago: setValorPagoInput,
     troco,
     parcelas,
     setParcelas,

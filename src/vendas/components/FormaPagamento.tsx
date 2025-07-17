@@ -4,8 +4,8 @@ import type { FormaPagamento } from '../types';
 interface FormaPagamentoProps {
   formaPagamento: FormaPagamento;
   setFormaPagamento: (f: FormaPagamento) => void;
-  valorPago: number;
-  setValorPago: (v: number) => void;
+  valorPago: string;
+  setValorPago: (v: string) => void;
   troco: number;
   parcelas: number;
   setParcelas: (n: number) => void;
@@ -31,6 +31,15 @@ const FormaPagamento: React.FC<FormaPagamentoProps> = ({
   total,
   valoresPredefinidos
 }) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/[^\d,.]/g, '');
+    setValorPago(value);
+  };
+
+  const handleValorPredefinido = (v: number) => {
+    setValorPago(v.toFixed(2).replace('.', ','));
+  };
+
   return (
     <div className="my-6 p-4 bg-gray-50 rounded shadow max-w-2xl">
       <h3 className="font-bold mb-2">Forma de Pagamento</h3>
@@ -54,13 +63,13 @@ const FormaPagamento: React.FC<FormaPagamentoProps> = ({
         <div>
           <label className="block mb-1 font-medium">Valor Pago</label>
           <input
-            type="number"
-            min={total}
-            step="any"
+            type="text"
+            inputMode="decimal"
             className="border p-2 rounded w-32"
             value={valorPago}
-            onChange={e => setValorPago(Number(e.target.value))}
+            onChange={handleInputChange}
             placeholder="R$"
+            autoComplete="off"
           />
           <div className="flex gap-1 mt-1">
             {valoresPredefinidos.map(v => (
@@ -68,7 +77,7 @@ const FormaPagamento: React.FC<FormaPagamentoProps> = ({
                 key={v}
                 type="button"
                 className="bg-gray-200 px-2 py-1 rounded text-sm hover:bg-green-200"
-                onClick={() => setValorPago(v)}
+                onClick={() => handleValorPredefinido(v)}
               >
                 R$ {v}
               </button>
