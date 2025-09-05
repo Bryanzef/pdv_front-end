@@ -114,38 +114,43 @@ export function useVendas() {
     setFeedback('Item removido do carrinho.');
   };
 
-  const finalizarVenda = async () => {
+  const finalizarVenda = async (imprimir?: boolean) => {
     if (carrinho.length === 0) {
       setFeedback('O carrinho está vazio.');
       return;
     }
     if (!validarPagamentoVenda({ formaPagamento, valorPagoInput, total, parcelas, setFeedback })) return;
-    gerarPdfVenda(carrinho, total);
-    // Corrigir: garantir que cada item tenha productId e preco como string
     const itensParaEnviar = carrinho.map(item => ({
       nome: item.nome,
-      preco: item.preco.toFixed(2), // string
+      preco: Number(item.preco),
       quantidade: item.quantidade,
       productId: item._id
     }));
-    await postVenda({
-      itens: itensParaEnviar,
-      total: total.toFixed(2), // string
-      pagamento: {
-        forma: formaPagamento,
-        valorPago: valorPago.toFixed(2),
-        troco: troco ? troco.toFixed(2) : undefined,
-        parcelas: formaPagamento === 'credito' ? parcelas : undefined
+    try {
+      await postVenda({
+        itens: itensParaEnviar,
+        total: total.toFixed(2),
+        pagamento: {
+          forma: formaPagamento,
+          valorPago: valorPago.toFixed(2),
+          troco: troco ? troco.toFixed(2) : undefined,
+          parcelas: formaPagamento === 'credito' ? parcelas : undefined
+        }
+      });
+      if (imprimir) {
+        gerarPdfVenda(carrinho, total);
       }
-    });
-    setCarrinho([]);
-    setTotal(0);
-    setValorPagoInput('');
-    setTroco(0);
-    setParcelas(1);
-    setFormaPagamento('dinheiro');
-    setModalOpen(null);
-    setFeedback('Venda finalizada com sucesso!');
+      setCarrinho([]);
+      setTotal(0);
+      setValorPagoInput('');
+      setTroco(0);
+      setParcelas(1);
+      setFormaPagamento('dinheiro');
+      setModalOpen(null);
+      setFeedback('Venda finalizada com sucesso!');
+    } catch (e: any) {
+      setFeedback('Erro ao finalizar venda: ' + (e?.response?.data?.erro || e?.response?.data?.detalhes?.message || 'Erro desconhecido'));
+    }
   };
 
   const cancelarVenda = () => {

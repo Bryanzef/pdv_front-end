@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import api from '../config/api';
 import Modal from '../shared/Modal';
+import { getVendaPorId } from '../vendas/services/vendasApi';
+import { gerarPdfVenda } from '../vendas/utils/pdfHelpers';
 
 interface VendaHistorico {
   id: string;
@@ -50,6 +52,29 @@ const Historico: React.FC = () => {
                 <td className="border p-2">{new Date(v.createdAt).toLocaleString('pt-BR')}</td>
                 <td className="border p-2">R$ {Number(v.total).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 <td className="border p-2">{v.metodoPagamento}</td>
+                <td className="border p-2 text-center">
+                  <button
+                    className="bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 transition-colors font-semibold shadow"
+                    title="Reimprimir Cupom"
+                    onClick={async () => {
+                      try {
+                        const venda = await getVendaPorId(v.id);
+                        const itens = venda.saleItems.map((item: any) => ({
+                          nome: item.nome,
+                          quantidade: item.quantidade,
+                          preco: Number(item.preco),
+                          tipo: item.product?.categoria || item.product?.tipo || 'un',
+                          subtotal: Number(item.preco) * Number(item.quantidade)
+                        }));
+                        gerarPdfVenda(itens, Number(venda.total));
+                      } catch (e) {
+                        setFeedback('Erro ao reimprimir cupom');
+                      }
+                    }}
+                  >
+                    <i className="fas fa-print mr-1"></i>Reimprimir
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

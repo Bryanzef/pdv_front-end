@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Modal from '../shared/Modal';
 import FormaPagamento from './components/FormaPagamento';
 import FormularioProduto from './components/FormularioProduto';
@@ -36,6 +36,15 @@ const Vendas: React.FC = () => {
     setParcelas,
     valoresPredefinidos
   } = useVendas();
+
+  // Novo estado para modal de confirmação
+  const [modalImprimir, setModalImprimir] = useState(false);
+  const [imprimirCupom, setImprimirCupom] = useState(false);
+
+  // Handler para finalizar venda com ou sem impressão
+  const handleFinalizarVenda = async (deveImprimir: boolean) => {
+    await finalizarVenda(deveImprimir);
+  };
 
   return (
     <div className="bg-white p-8 rounded-xl shadow-lg max-w-5xl mx-auto">
@@ -82,7 +91,7 @@ const Vendas: React.FC = () => {
         <div className="flex gap-2">
           <button
             className="bg-green-700 text-white px-4 py-2 rounded hover:bg-green-800 transition-colors font-semibold shadow"
-            onClick={finalizarVenda}
+            onClick={() => setModalImprimir(true)}
           >
             <i className="fas fa-check mr-2"></i>Finalizar Venda
           </button>
@@ -173,6 +182,39 @@ const Vendas: React.FC = () => {
         <div className={`my-2 p-2 rounded text-center font-medium ${feedback.includes('sucesso') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
           {feedback}
         </div>
+      )}
+      {/* Modal de confirmação de finalização */}
+      {modalImprimir && (
+        <Modal
+          isOpen={modalImprimir}
+          onClose={() => setModalImprimir(false)}
+          title="Deseja finalizar a venda?"
+          content={
+            <div className="flex flex-col gap-4">
+              <span>Você deseja finalizar a venda e imprimir o cupom não fiscal?</span>
+              <div className="flex gap-2 justify-end">
+                <button
+                  className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
+                  onClick={() => setModalImprimir(false)}
+                >Cancelar</button>
+                <button
+                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                  onClick={async () => {
+                    setModalImprimir(false);
+                    await handleFinalizarVenda(false); // Só finaliza, não imprime
+                  }}
+                >Não, só finalizar</button>
+                <button
+                  className="bg-green-700 text-white px-4 py-2 rounded hover:bg-green-800"
+                  onClick={async () => {
+                    setModalImprimir(false);
+                    await handleFinalizarVenda(true); // Finaliza e imprime
+                  }}
+                >Sim, finalizar e imprimir</button>
+              </div>
+            </div>
+          }
+        />
       )}
     </div>
   );

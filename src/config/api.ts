@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
+import axios, { AxiosError, AxiosInstance, AxiosResponse } from 'axios';
 
 // Configuração da URL base da API
 // Em desenvolvimento usa o proxy do Vite, em produção usa a URL completa
@@ -13,6 +13,8 @@ const api: AxiosInstance = axios.create({
   },
 });
 
+// Remover interceptor de autenticação
+
 // Interceptor para requisições
 api.interceptors.request.use(
   (config) => {
@@ -21,7 +23,7 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
+
     console.log(`🚀 Requisição: ${config.method?.toUpperCase()} ${config.url}`);
     return config;
   },

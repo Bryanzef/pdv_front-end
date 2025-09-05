@@ -2,10 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --primary: #059669;
+  --primary-dark: #047857;
+  --secondary: #DC2626;
+  --accent: #F59E0B;
+  --neutral-900: #111827;
+  --neutral-100: #F9FAFB;
+
+  --font-display: 'Poppins', sans-serif;
+  --font-body: 'Open Sans', sans-serif;
+
+  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  --shadow-elevated: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+@layer base {
+  html {
+    font-family: var(--font-body);
+  }
+}
+
 body {
-  font-family: 'Arial', sans-serif;
   margin: 0;
-  background-color: #f9fafb;
+  background-color: var(--neutral-100);
 }
 
 body.dark, html.dark {

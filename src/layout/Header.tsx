@@ -14,11 +14,11 @@ export default function Header() {
 
   return (
     <header className="h-16 bg-white dark:bg-gray-900 shadow flex items-center justify-between px-8 sticky top-0 z-10 transition-colors">
-      <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 tracking-tight">Fruteira Sistema</h1>
+      <h1 className="text-2xl font-semibold text-neutral-900 dark:text-gray-100 tracking-tight font-display">Fruteira Sistema</h1>
       <div className="flex items-center gap-4">
         <button
           onClick={toggleTheme}
-          className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500"
+          className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary"
           title={theme === 'dark' ? 'Modo claro' : 'Modo escuro'}
         >
           {theme === 'dark' ? (
@@ -31,20 +31,20 @@ export default function Header() {
           <div className="relative">
             <button
               onClick={() => setMenuAberto(!menuAberto)}
-              className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-md p-2"
+              className="flex items-center space-x-2 text-neutral-900 hover:text-black focus:outline-none focus:ring-2 focus:ring-primary rounded-md p-2"
             >
-              <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                 <span className="text-white text-sm font-medium">
                   {usuario.nome.charAt(0).toUpperCase()}
                 </span>
               </div>
               <span className="hidden md:block text-sm font-medium">{usuario.nome}</span>
               <span className={`hidden md:block text-xs px-2 py-1 rounded-full ${
-                usuario.role === 'admin' 
+                usuario.perfil === 'admin' 
                   ? 'bg-red-100 text-red-800' 
                   : 'bg-green-100 text-green-800'
               }`}>
-                {usuario.role === 'admin' ? 'Admin' : 'Usuário'}
+                {usuario.perfil === 'admin' ? 'Admin' : 'Usuário'}
               </span>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />

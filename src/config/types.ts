@@ -23,11 +23,13 @@ export interface PaginatedResponse<T> {
 }
 
 export interface Usuario {
-  _id: string;
+  id: string;
   nome: string;
   email: string;
-  role: 'admin' | 'usuario';
+  perfil: 'admin' | 'usuario';
   ativo: boolean;
-  dataCriacao: string;
+  createdAt: string;
+  updatedAt: string;
+  // Campos opcionais para compatibilidade
   ultimoLogin?: string;
 } 

@@ -1,9 +1,17 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useUIPreferences } from '../contexts/UIPreferencesContext';
 import Header from './Header';
 import Sidebar from './Sidebar';
 
 export default function LayoutBase({ children }: { children: React.ReactNode }) {
   const [sidebarMinimizada, setSidebarMinimizada] = useState(true);
+  const { sidebarMode } = useUIPreferences();
+
+  useEffect(() => {
+    if (sidebarMode === 'fixed') return;
+    // In auto mode, default to minimized until hover/focus
+    setSidebarMinimizada(true);
+  }, [sidebarMode]);
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-950 transition-colors">
