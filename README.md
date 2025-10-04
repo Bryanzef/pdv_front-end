@@ -1,6 +1,8 @@
-# PDV Frontend
+# 🍉 PDV Sistema - Frontend
 
-Sistema de PDV (Ponto de Venda) - Frontend desenvolvido com React, TypeScript e Vite.
+**Sistema de PDV (Ponto de Venda) - Frontend desenvolvido com React, TypeScript e Vite**
+
+> ⚠️ **AVISO LEGAL**: Este projeto é de propriedade exclusiva de **Bryan Zef**. É **PROIBIDO** copiar, distribuir, modificar ou usar este código sem autorização expressa por escrito do autor. Todos os direitos reservados.
 
 ## 🚀 Tecnologias
 
@@ -26,32 +28,82 @@ Sistema de PDV (Ponto de Venda) - Frontend desenvolvido com React, TypeScript e 
 - ✅ Tema claro/escuro
 - ✅ Notificações toast
 
-## 🛠️ Instalação
+## 🛠️ Instalação e Configuração Local
 
-1. Clone o repositório:
+### 1. Pré-requisitos
+- Node.js 18+ instalado
+- Backend do PDV rodando localmente (porta 5000)
+- Banco de dados PostgreSQL/Supabase configurado
+
+### 2. Clone o repositório
 ```bash
 git clone https://github.com/Bryanzef/pdv_front-end.git
 cd pdv_front-end
 ```
 
-2. Instale as dependências:
+### 3. Instale as dependências
 ```bash
 npm install
 ```
 
-3. Configure as variáveis de ambiente:
+### 4. Configure as variáveis de ambiente
 ```bash
+# Copie o arquivo de exemplo
 cp .env.example .env
 ```
 
-4. Configure o arquivo `.env`:
+### 5. Configure o arquivo `.env` para desenvolvimento local
 ```env
-# URL da API do Backend
-VITE_API_URL=https://seu-backend.herokuapp.com
+# Para desenvolvimento local, deixe vazio para usar proxy do Vite
+VITE_API_URL=
 
 # Configurações opcionais
 VITE_APP_NAME=PDV Sistema
 VITE_APP_VERSION=1.0.0
+```
+
+### 6. Execute o projeto
+```bash
+# Modo desenvolvimento
+npm run dev
+
+# O servidor iniciará em http://localhost:5173
+```
+
+## 🔧 Configuração do Backend Local
+
+Para o frontend funcionar localmente, você precisa do backend rodando:
+
+### 1. Clone o backend
+```bash
+git clone https://github.com/Bryanzef/pdv_back-end.git
+cd pdv_back-end
+```
+
+### 2. Configure o backend
+```bash
+# Instale dependências
+npm install
+
+# Configure .env
+cp env.example .env
+```
+
+### 3. Configure o .env do backend
+```env
+PORT=5000
+NODE_ENV=development
+FRONTEND_URL=http://localhost:5173
+DATABASE_URL=sua_url_do_banco
+JWT_SECRET=sua_chave_secreta
+```
+
+### 4. Execute o backend
+```bash
+# Desenvolvimento
+npm run dev
+
+# O backend rodará em http://localhost:5000
 ```
 
 ## 🚀 Executando
@@ -59,6 +111,7 @@ VITE_APP_VERSION=1.0.0
 ### Desenvolvimento
 ```bash
 npm run dev
+# Acesse: http://localhost:5173
 ```
 
 ### Build para Produção
@@ -117,8 +170,8 @@ O frontend se conecta ao backend através da variável de ambiente `VITE_API_URL
 
 ### Relatórios
 - Histórico de vendas
-- Relatórios por período
-- Exportação de dados
+  - Relatórios por período
+  - Exportação de dados
 
 ## 🎨 Design System
 
