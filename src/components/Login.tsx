@@ -31,7 +31,7 @@ const Login: React.FC = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-primary to-primary-dark py-12 px-4">
       <div className="w-full max-w-md mx-auto">
-        <Card variant="elevated" padding="lg">
+        <Card variant="default" padding="lg">
           <div className="flex flex-col items-center mb-8">
             <span className="text-5xl mb-2">🍉</span>
             <h2 className="text-3xl font-semibold text-neutral-900 mb-1 font-display">Bem-vindo à Fruteira</h2>
