@@ -1,5 +1,9 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import api from '../config/api';
+import Card from '../shared/components/ui/Card';
+import Button from '../shared/components/ui/Button';
+import Input from '../shared/components/ui/Input';
+import { ChartBar, Package, ShoppingCart, CurrencyCircleDollar, CalendarBlank, ArrowRight } from 'phosphor-react';
 
 interface Relatorio {
   totalVendas: number;
@@ -8,6 +12,27 @@ interface Relatorio {
   valorTotal: number;
   formasPagamento: Record<string, number>;
 }
+
+interface MetricCardProps {
+  title: string;
+  value: string;
+  icon: React.ReactNode;
+  color: string;
+}
+
+const MetricCard: React.FC<MetricCardProps> = ({ title, value, icon, color }) => (
+  <Card className="h-full">
+    <div className="flex items-center gap-4">
+      <div className={`p-4 rounded-lg ${color}`}>
+        {icon}
+      </div>
+      <div>
+        <p className="text-label text-text-secondary">{title}</p>
+        <h3 className="text-h2 font-bold text-text-primary">{value}</h3>
+      </div>
+    </div>
+  </Card>
+);
 
 const Relatorio: React.FC = () => {
   const [inicio, setInicio] = useState('');
@@ -35,72 +60,169 @@ const Relatorio: React.FC = () => {
     }
   };
 
+  // Função para determinar a cor da barra baseada na forma de pagamento
+  const getBarColor = (formaPagamento: string) => {
+    switch(formaPagamento.toLowerCase()) {
+      case 'dinheiro': return 'bg-success';
+      case 'pix': return 'bg-primary';
+      case 'cartão': 
+      case 'cartao':
+      case 'cartão de crédito':
+      case 'cartao de credito': return 'bg-secondary';
+      default: return 'bg-accent';
+    }
+  };
+
   return (
-    <div className="bg-white p-8 rounded-xl shadow-lg max-w-5xl mx-auto">
-      <h2 className="text-3xl font-bold mb-6 text-green-900 flex items-center gap-2">
-        <span>📊</span> Relatório de Vendas
-      </h2>
-      <div className="flex gap-4 mb-4">
-        <div>
-          <label className="block mb-1 font-medium">Data Inicial:</label>
-          <input type="date" value={inicio} onChange={e => setInicio(e.target.value)} className="border p-2 rounded" />
-        </div>
-        <div>
-          <label className="block mb-1 font-medium">Data Final:</label>
-          <input type="date" value={fim} onChange={e => setFim(e.target.value)} className="border p-2 rounded" />
-        </div>
-        <button
-          className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition-colors font-semibold shadow self-end"
-          onClick={gerarRelatorio}
-          disabled={loading}
-        >{loading ? 'Gerando...' : 'Gerar Relatório'}</button>
-      </div>
-      {feedback && <div className="my-2 p-2 rounded text-center font-medium bg-red-100 text-red-800">{feedback}</div>}
-      {relatorio && (
-        <div className="mt-6">
-          <h3 className="text-xl font-bold mb-2">Resumo</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-            <div className="bg-green-50 p-4 rounded shadow">
-              <div className="font-medium">Total de Vendas</div>
-              <div className="text-2xl font-bold">{relatorio.totalVendas}</div>
-            </div>
-            <div className="bg-green-50 p-4 rounded shadow">
-              <div className="font-medium">Valor Total Vendido</div>
-              <div className="text-2xl font-bold">R$ {Number(relatorio.valorTotal).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
-            </div>
-            <div className="bg-green-50 p-4 rounded shadow">
-              <div className="font-medium">Itens por Peso (kg)</div>
-              <div className="text-2xl font-bold">{relatorio.totalItensKg} kg</div>
-            </div>
-            <div className="bg-green-50 p-4 rounded shadow">
-              <div className="font-medium">Itens por Unidade</div>
-              <div className="text-2xl font-bold">{relatorio.totalItensUn} un</div>
-            </div>
+    <div className="space-y-6">
+      <h1 className="text-h1 font-bold text-text-primary">Relatório de Vendas</h1>
+      
+      {/* Filtros */}
+      <Card>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <Input 
+              type="date" 
+              label="Data Inicial" 
+              value={inicio} 
+              onChange={e => setInicio(e.target.value)} 
+              leftAddon={<CalendarBlank size={18} className="text-text-secondary" />}
+            />
           </div>
-          <h3 className="text-lg font-bold mt-6 mb-2">Formas de Pagamento</h3>
-          <ul className="mb-6">
-            {Object.entries(relatorio.formasPagamento).map(([forma, valor]) => (
-              <li key={forma} className="flex justify-between border-b py-1">
-                <span className="capitalize">{forma}</span>
-                <span>R$ {Number(valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-              </li>
-            ))}
-          </ul>
-          {/* Dashboard simples: gráfico de barras */}
-          <div className="mt-8">
-            <h3 className="text-lg font-bold mb-2">Dashboard (Total por Forma de Pagamento)</h3>
-            <div className="flex gap-4 items-end h-40">
-              {Object.entries(relatorio.formasPagamento).map(([forma, valor]) => (
-                <div key={forma} className="flex flex-col items-center justify-end h-full">
-                  <div
-                    className="bg-green-600 rounded-t w-10"
-                    style={{ height: `${Math.max(10, valor / relatorio.valorTotal * 120)}px` }}
-                    title={`R$ ${Number(valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
-                  ></div>
-                  <span className="text-xs mt-1 capitalize">{forma}</span>
-                </div>
-              ))}
-            </div>
+          <div>
+            <Input 
+              type="date" 
+              label="Data Final" 
+              value={fim} 
+              onChange={e => setFim(e.target.value)} 
+              leftAddon={<CalendarBlank size={18} className="text-text-secondary" />}
+            />
+          </div>
+          <div className="flex items-end">
+            <Button
+              variant="primary"
+              onClick={gerarRelatorio}
+              disabled={loading}
+              loading={loading}
+              fullWidth
+              className="h-[42px]"
+            >
+              {loading ? 'Gerando...' : 'Gerar Relatório'}
+            </Button>
+          </div>
+        </div>
+      </Card>
+      
+      {/* Feedback de erro */}
+      {feedback && (
+        <div className="p-3 rounded-md text-center font-medium bg-danger/10 text-danger">
+          {feedback}
+        </div>
+      )}
+      
+      {/* Conteúdo do relatório */}
+      {relatorio && (
+        <div className="space-y-6">
+          {/* Cards de métricas */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <MetricCard 
+              title="Total de Vendas"
+              value={relatorio.totalVendas.toString()}
+              icon={<ShoppingCart size={24} className="text-white" />}
+              color="bg-primary/90"
+            />
+            
+            <MetricCard 
+              title="Valor Total Vendido"
+              value={`R$ ${Number(relatorio.valorTotal).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+              icon={<CurrencyCircleDollar size={24} className="text-white" />}
+              color="bg-success/90"
+            />
+            
+            <MetricCard 
+              title="Itens por Peso (kg)"
+              value={`${relatorio.totalItensKg} kg`}
+              icon={<Package size={24} className="text-white" />}
+              color="bg-accent/90"
+            />
+            
+            <MetricCard 
+              title="Itens por Unidade"
+              value={`${relatorio.totalItensUn} un`}
+              icon={<Package size={24} className="text-white" />}
+              color="bg-secondary/90"
+            />
+          </div>
+          
+          {/* Formas de Pagamento */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Tabela de Formas de Pagamento */}
+            <Card>
+              <h2 className="text-h3 font-semibold text-text-primary mb-4">Formas de Pagamento</h2>
+              <div className="overflow-hidden">
+                <table className="min-w-full">
+                  <thead className="bg-background-app border-b border-border">
+                    <tr>
+                      <th className="text-left p-3 text-sm font-semibold text-text-primary">Forma de Pagamento</th>
+                      <th className="text-right p-3 text-sm font-semibold text-text-primary">Valor</th>
+                      <th className="text-right p-3 text-sm font-semibold text-text-primary">Percentual</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(relatorio.formasPagamento).map(([forma, valor]) => (
+                      <tr key={forma} className="border-b border-border hover:bg-background-app">
+                        <td className="p-3">
+                          <div className="flex items-center">
+                            <div className={`w-3 h-3 rounded-full mr-2 ${getBarColor(forma)}`}></div>
+                            <span className="capitalize">{forma}</span>
+                          </div>
+                        </td>
+                        <td className="p-3 text-right">
+                          R$ {Number(valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </td>
+                        <td className="p-3 text-right">
+                          {((valor / relatorio.valorTotal) * 100).toFixed(1)}%
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+            
+            {/* Gráfico de barras */}
+            <Card>
+              <h2 className="text-h3 font-semibold text-text-primary mb-4">Total por Forma de Pagamento</h2>
+              <div className="flex gap-4 items-end h-60">
+                {Object.entries(relatorio.formasPagamento).map(([forma, valor]) => {
+                  const percentage = (valor / relatorio.valorTotal) * 100;
+                  const height = Math.max(10, percentage); // Altura mínima da barra é 10%
+                  return (
+                    <div key={forma} className="flex flex-col items-center justify-end h-full flex-1">
+                      <div className="mb-2 text-sm font-medium">
+                        {percentage.toFixed(0)}%
+                      </div>
+                      <div
+                        className={`w-full rounded-t transition-all duration-500 ${getBarColor(forma)}`}
+                        style={{ height: `${height}%` }}
+                      ></div>
+                      <div className="text-xs mt-2 text-center capitalize text-text-secondary w-full truncate">
+                        {forma}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
+          </div>
+          
+          {/* Período do relatório */}
+          <div className="bg-primary-soft p-4 rounded-md flex items-center justify-center gap-2 text-text-primary text-sm">
+            <CalendarBlank size={18} />
+            <span>Relatório gerado para o período de </span>
+            <strong>{new Date(inicio).toLocaleDateString('pt-BR')}</strong>
+            <ArrowRight size={18} />
+            <strong>{new Date(fim).toLocaleDateString('pt-BR')}</strong>
           </div>
         </div>
       )}

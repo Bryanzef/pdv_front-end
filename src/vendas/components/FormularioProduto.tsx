@@ -1,6 +1,8 @@
 import React from 'react';
 import Select from 'react-select';
 import type { ProdutoOption } from '../types';
+import Button from '../../shared/components/ui/Button';
+import { ShoppingBagOpen, Scales, Plus, MagnifyingGlass } from 'phosphor-react';
 
 interface FormularioProdutoProps {
   produtoOptions: ProdutoOption[];
@@ -13,6 +15,45 @@ interface FormularioProdutoProps {
   adicionarAoCarrinho: () => void;
 }
 
+const customSelectStyles = {
+  control: (base: any) => ({
+    ...base,
+    borderRadius: '0.5rem',
+    borderColor: '#EAECEE',
+    minHeight: '42px',
+    boxShadow: 'none',
+    '&:hover': {
+      borderColor: '#2ECC71',
+    },
+    '&:focus-within': {
+      borderColor: '#2ECC71',
+      boxShadow: '0 0 0 2px #EAF9F1',
+    },
+  }),
+  menu: (base: any) => ({
+    ...base,
+    borderRadius: '0.5rem',
+    overflow: 'hidden',
+    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+  }),
+  option: (base: any, state: any) => ({
+    ...base,
+    backgroundColor: state.isSelected 
+      ? '#2ECC71' 
+      : state.isFocused 
+        ? '#EAF9F1' 
+        : undefined,
+    color: state.isSelected ? 'white' : '#2C3E50',
+    '&:hover': {
+      backgroundColor: state.isSelected ? '#28B463' : '#EAF9F1',
+    }
+  }),
+  placeholder: (base: any) => ({
+    ...base,
+    color: '#BDC3C7',
+  }),
+};
+
 const FormularioProduto: React.FC<FormularioProdutoProps> = ({
   produtoOptions,
   selectedProduto,
@@ -23,50 +64,77 @@ const FormularioProduto: React.FC<FormularioProdutoProps> = ({
   lerPesoBalanca,
   adicionarAoCarrinho
 }) => (
-  <div className="mb-4">
-    <label className="block mb-2 font-medium">Selecionar Produto:</label>
-    <Select
-      options={produtoOptions}
-      value={selectedProduto}
-      onChange={handleProdutoChange}
-      placeholder="Busque por nome do produto..."
-      className="w-full"
-      classNamePrefix="select"
-      noOptionsMessage={() => "Nenhum produto encontrado"}
-    />
-    {feedback.includes('Selecione') && <p className="text-red-600 mt-2">{feedback}</p>}
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-      <div>
-        <label className="block mb-2 font-medium">Peso/Quantidade:</label>
+  <div className="space-y-4">
+    <div>
+      <label className="block text-label font-medium text-text-primary mb-2">
+        Selecionar Produto:
+      </label>
+      <div className="relative">
+        <Select
+          options={produtoOptions}
+          value={selectedProduto}
+          onChange={handleProdutoChange}
+          placeholder="Busque por nome do produto..."
+          className="w-full"
+          classNamePrefix="select"
+          noOptionsMessage={() => "Nenhum produto encontrado"}
+          styles={customSelectStyles}
+          formatOptionLabel={(option) => (
+            <div className="flex items-center gap-2">
+              <ShoppingBagOpen size={16} className="text-primary" />
+              <div>
+                <div className="font-medium">{option.label}</div>
+                <div className="text-xs text-text-secondary">
+                  {option.produto.tipo === 'peso' ? 'Por Kg' : 'Por Unidade'} - R$ {Number(option.produto.preco).toFixed(2)}
+                </div>
+              </div>
+            </div>
+          )}
+        />
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none">
+          <MagnifyingGlass size={16} />
+        </div>
+      </div>
+    </div>
+
+    <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
+      <div className="sm:col-span-3">
+        <label className="block text-label font-medium text-text-primary mb-2">
+          {selectedProduto?.produto.tipo === 'peso' ? 'Peso (kg):' : 'Quantidade:'}
+        </label>
         <input
           type="number"
-          step="0.001"
+          step={selectedProduto?.produto.tipo === 'peso' ? "0.001" : "1"}
           value={pesoOuQuantidade}
           onChange={(e) => setPesoOuQuantidade(e.target.value)}
           id="pesoOuQuantidade"
-          className="border p-2 w-full rounded focus:ring-2 focus:ring-green-400"
-          placeholder="Digite o peso (kg) ou quantidade"
+          className="block w-full rounded-md border border-border bg-background-component placeholder-text-disabled text-text-primary p-3 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-soft"
+          placeholder={selectedProduto?.produto.tipo === 'peso' ? "Digite o peso em kg" : "Digite a quantidade"}
         />
-        {feedback.includes('Peso/quantidade') && <p className="text-red-600 mt-2">{feedback}</p>}
       </div>
-      <div className="flex items-end">
-        <button
-          className="mt-2 bg-blue-600 text-white p-2 rounded w-full hover:bg-blue-700 transition-colors font-semibold shadow"
+      <div className="sm:col-span-2 flex items-end">
+        <Button
+          variant="secondary"
           onClick={lerPesoBalanca}
+          leftIcon={<Scales size={16} />}
+          fullWidth
+          disabled={!selectedProduto || selectedProduto?.produto.tipo !== 'peso'}
+          title={!selectedProduto || selectedProduto?.produto.tipo !== 'peso' ? "Disponível apenas para produtos pesados" : "Ler peso da balança"}
         >
-          <i className="fas fa-weight-scale mr-2"></i>Ler Peso da Balança
-        </button>
+          Ler Balança
+        </Button>
       </div>
     </div>
-    <button
-      className="mt-4 bg-green-600 text-white p-2 rounded w-full hover:bg-green-700 transition-colors font-semibold shadow"
+
+    <Button
+      variant="primary"
       onClick={adicionarAoCarrinho}
+      leftIcon={<Plus size={16} />}
+      fullWidth
+      disabled={!selectedProduto || !pesoOuQuantidade || parseFloat(pesoOuQuantidade) <= 0}
     >
-      <i className="fas fa-plus mr-2"></i>Adicionar ao Carrinho
-    </button>
-    {feedback && !feedback.includes('Selecione') && !feedback.includes('Peso/quantidade') && (
-      <div className={`mt-2 p-2 rounded text-center font-medium ${feedback.includes('sucesso') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{feedback}</div>
-    )}
+      Adicionar ao Carrinho
+    </Button>
   </div>
 );
 

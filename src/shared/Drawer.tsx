@@ -1,28 +1,74 @@
-import type { ReactNode } from 'react';
+import React, { ReactNode } from 'react';
+import Button from './components/ui/Button';
 
 interface DrawerProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
   children: ReactNode;
+  position?: 'right' | 'left';
   width?: string; // ex: 'max-w-lg'
+  footer?: ReactNode;
 }
 
-const Drawer: React.FC<DrawerProps> = ({ isOpen, onClose, title, children, width = 'max-w-lg' }) => {
+const Drawer: React.FC<DrawerProps> = ({ 
+  isOpen, 
+  onClose, 
+  title, 
+  children, 
+  position = 'right',
+  width = 'max-w-md',
+  footer
+}) => {
   if (!isOpen) return null;
+
+  const positionClasses = {
+    right: 'right-0 ml-auto',
+    left: 'left-0 mr-auto'
+  };
+
+  const animationClasses = {
+    right: 'animate-slide-in-right',
+    left: 'animate-slide-in-left'
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex">
       {/* Overlay */}
-      <div className="fixed inset-0 bg-black bg-opacity-40 transition-opacity" onClick={onClose}></div>
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-40 transition-opacity" 
+        onClick={onClose}
+      />
+      
       {/* Painel lateral */}
-      <div className={`relative bg-white dark:bg-gray-900 h-full shadow-2xl border-l border-gray-100 dark:border-gray-800 w-full sm:w-[480px] ${width} ml-auto animate-slide-in-right`}>
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
-          <h2 className="text-2xl font-bold text-green-900 dark:text-green-200 flex items-center gap-2">
-            <span>📄</span> {title}
-          </h2>
-          <button onClick={onClose} className="text-gray-500 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 text-2xl font-bold">&times;</button>
+      <div 
+        className={`relative bg-background-component h-full shadow-lg border-border ${position === 'right' ? 'border-l' : 'border-r'} w-full sm:w-[480px] ${width} ${positionClasses[position]} ${animationClasses[position]} flex flex-col`}
+      >
+        {/* Cabeçalho */}
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-border">
+          <h2 className="text-lg sm:text-h2 font-semibold text-text-primary pr-8">{title}</h2>
+          <button 
+            onClick={onClose}
+            className="text-text-secondary hover:text-text-primary text-2xl font-medium focus:outline-none absolute top-4 right-4"
+            aria-label="Fechar"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
-        <div className="p-6 overflow-y-auto h-[calc(100vh-80px)] text-gray-800 dark:text-gray-100">{children}</div>
+        
+        {/* Conteúdo com scroll */}
+        <div className="p-4 sm:p-6 overflow-y-auto flex-grow scrollable-element text-text-primary">
+          {children}
+        </div>
+        
+        {/* Rodapé opcional */}
+        {footer && (
+          <div className="p-4 sm:p-6 border-t border-border bg-background-component flex flex-col sm:flex-row sm:justify-end gap-3">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );

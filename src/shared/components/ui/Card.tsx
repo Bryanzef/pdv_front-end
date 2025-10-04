@@ -2,7 +2,7 @@ import React from 'react';
 import { twMerge } from 'tailwind-merge';
 import clsx from 'clsx';
 
-type CardVariant = 'default' | 'elevated' | 'outlined' | 'ghost';
+type CardVariant = 'default' | 'outlined' | 'ghost';
 type CardPadding = 'none' | 'sm' | 'md' | 'lg' | 'xl';
 
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -21,10 +21,9 @@ const paddingClasses: Record<CardPadding, string> = {
 };
 
 const variantClasses: Record<CardVariant, string> = {
-  default: 'bg-white border border-gray-200 rounded-lg',
-  elevated: 'bg-white shadow-md rounded-lg',
-  outlined: 'bg-white border-2 border-gray-200 rounded-lg',
-  ghost: 'bg-transparent',
+  default: 'bg-background-component rounded-lg shadow-md',
+  outlined: 'bg-background-component rounded-lg border border-border',
+  ghost: 'bg-transparent p-0',
 };
 
 const Card: React.FC<CardProps> = ({
@@ -38,8 +37,8 @@ const Card: React.FC<CardProps> = ({
   const classes = twMerge(
     clsx(
       variantClasses[variant],
-      paddingClasses[padding],
-      hover && 'transition duration-fast ease-standard hover:shadow-lg hover:-translate-y-0.5',
+      variant !== 'ghost' && paddingClasses[padding],
+      hover && 'transition-all duration-normal hover:shadow-lg hover:-translate-y-1',
       clickable && 'cursor-pointer',
       className
     )

@@ -3,40 +3,143 @@
 @tailwind utilities;
 
 :root {
-  --primary: #059669;
-  --primary-dark: #047857;
-  --secondary: #DC2626;
-  --accent: #F59E0B;
-  --neutral-900: #111827;
-  --neutral-100: #F9FAFB;
+  --primary: #2ECC71;
+  --primary-hover: #28B463;
+  --primary-soft: #EAF9F1;
+  --secondary: #34495E;
+  --secondary-hover: #2C3E50;
+  --accent: #F39C12;
+  --success: #27AE60;
+  --warning: #F1C40F;
+  --danger: #E74C3C;
+  --background-app: #F4F6F8;
+  --background-component: #FFFFFF;
+  --text-primary: #2C3E50;
+  --text-secondary: #7F8C8D;
+  --text-disabled: #BDC3C7;
+  --border: #EAECEE;
 
-  --font-display: 'Poppins', sans-serif;
-  --font-body: 'Open Sans', sans-serif;
+  --font-sans: 'Inter', sans-serif;
 
-  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-  --shadow-elevated: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
 @layer base {
   html {
-    font-family: var(--font-body);
+    font-family: var(--font-sans);
+    @apply text-base antialiased;
+  }
+  
+  h1 {
+    @apply text-h1 font-bold text-text-primary;
+  }
+  
+  h2 {
+    @apply text-h2 font-semibold text-text-primary;
+  }
+  
+  h3 {
+    @apply text-h3 font-semibold text-text-primary;
+  }
+  
+  p {
+    @apply text-body text-text-primary;
   }
 }
 
 body {
   margin: 0;
-  background-color: var(--neutral-100);
+  background-color: var(--background-app);
+  color: var(--text-primary);
+  @apply overflow-x-hidden min-h-screen;
 }
 
-body.dark, html.dark {
-  background-color: #0f172a;
+/* Animações */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
+@keyframes slide-in-right {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slide-in-left {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out;
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.3s ease-out;
+}
+
+/* Estilos específicos de componentes */
 .product-card {
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
 }
 
 .product-card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Classes de responsividade */
+.responsive-table-container {
+  @apply w-full overflow-x-auto;
+}
+
+.responsive-table {
+  @apply min-w-full table-auto;
+}
+
+/* Ajustes para dispositivos pequenos */
+@media (max-width: 640px) {
+  h1 {
+    @apply text-2xl;
+  }
+  
+  h2 {
+    @apply text-xl;
+  }
+  
+  h3 {
+    @apply text-lg;
+  }
+  
+  .hide-on-mobile {
+    @apply hidden;
+  }
+}
+
+/* Fix para elementos scrolláveis em iOS */
+.scrollable-element {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Ajustes para modais em dispositivos pequenos */
+@media (max-width: 640px) {
+  .responsive-modal {
+    @apply p-4 w-[95%] max-w-none mx-auto;
+  }
+}
+
+/* Melhorias de acessibilidade */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

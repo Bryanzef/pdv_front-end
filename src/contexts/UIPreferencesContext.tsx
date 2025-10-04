@@ -5,6 +5,8 @@ type SidebarMode = 'fixed' | 'auto';
 interface UIPreferencesContextType {
   sidebarMode: SidebarMode;
   setSidebarMode: (mode: SidebarMode) => void;
+  sidebarMobileOpen: boolean;
+  setSidebarMobileOpen: (open: boolean) => void;
 }
 
 const UIPreferencesContext = createContext<UIPreferencesContextType | undefined>(undefined);
@@ -18,11 +20,21 @@ export const UIPreferencesProvider: React.FC<{ children: React.ReactNode }> = ({
     return 'fixed';
   });
 
+  const [sidebarMobileOpen, setSidebarMobileOpen] = useState(false);
+
   useEffect(() => {
     localStorage.setItem('sidebarMode', sidebarMode);
   }, [sidebarMode]);
 
-  const value = useMemo(() => ({ sidebarMode, setSidebarMode }), [sidebarMode]);
+  const value = useMemo(
+    () => ({ 
+      sidebarMode, 
+      setSidebarMode,
+      sidebarMobileOpen,
+      setSidebarMobileOpen
+    }), 
+    [sidebarMode, sidebarMobileOpen]
+  );
 
   return (
     <UIPreferencesContext.Provider value={value}>

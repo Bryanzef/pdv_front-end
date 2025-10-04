@@ -1,8 +1,10 @@
 import axios, { AxiosError, AxiosInstance, AxiosResponse } from 'axios';
 
 // Configuração da URL base da API
-// Em desenvolvimento usa o proxy do Vite, em produção usa a URL completa
-const API_BASE_URL = import.meta.env.DEV ? '/api' : 'http://localhost:5000/api';
+// Em desenvolvimento usa o proxy do Vite, em produção usa a variável de ambiente
+const API_BASE_URL = import.meta.env.DEV 
+  ? '/api' 
+  : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api`;
 
 // Criando instância do Axios com configurações padrão
 const api: AxiosInstance = axios.create({

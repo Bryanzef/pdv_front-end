@@ -14,6 +14,7 @@ export function useVendas() {
   const [feedback, setFeedback] = useState<string>('');
   const [modalOpen, setModalOpen] = useState<string | null>(null);
   const [editItem, setEditItem] = useState<ItemCarrinho & { index: number } | null>(null);
+  const [carregando, setCarregando] = useState<boolean>(false);
 
   // Pagamento
   const [formaPagamento, setFormaPagamento] = useState<FormaPagamento>('dinheiro');
@@ -23,9 +24,17 @@ export function useVendas() {
   const [parcelas, setParcelas] = useState<number>(1);
 
   useEffect(() => {
+    setCarregando(true);
     getProdutos()
-      .then((produtos) => setProdutos(produtos))
-      .catch(() => setFeedback('Erro ao carregar produtos'));
+      .then((produtos) => {
+        setProdutos(produtos);
+        setCarregando(false);
+      })
+      .catch((error) => {
+        console.error('Erro ao carregar produtos:', error);
+        setFeedback('Erro ao carregar produtos');
+        setCarregando(false);
+      });
   }, []);
 
   // Atualizar troco automaticamente para dinheiro
@@ -50,9 +59,19 @@ export function useVendas() {
   };
 
   const lerPesoBalanca = () => {
-    const peso = (Math.random() * 5).toFixed(3);
-    setPesoOuQuantidade(peso);
-    setFeedback('');
+    try {
+      setCarregando(true);
+      // Simula leitura da balança com um pequeno atraso
+      setTimeout(() => {
+        const peso = (Math.random() * 5).toFixed(3);
+        setPesoOuQuantidade(peso);
+        setFeedback('');
+        setCarregando(false);
+      }, 800);
+    } catch (error) {
+      setFeedback('Não foi possível conectar à balança. Tente novamente.');
+      setCarregando(false);
+    }
   };
 
   const adicionarAoCarrinho = () => {
@@ -60,58 +79,115 @@ export function useVendas() {
       setFeedback('Selecione um produto.');
       return;
     }
+    
     const quantidade = parseFloat(pesoOuQuantidade);
     if (isNaN(quantidade) || quantidade <= 0) {
       setFeedback('Peso/quantidade deve ser um número positivo.');
       return;
     }
-    const produto = selectedProduto.produto;
-    const subtotal = produto.preco * quantidade;
-    setCarrinho([...carrinho, { ...produto, quantidade, subtotal, precoOriginal: produto.preco }]);
-    setTotal(total + subtotal);
-    setPesoOuQuantidade('');
-    setSelectedProduto(null);
-    setFeedback('Item adicionado ao carrinho.');
+    
+    try {
+      const produto = selectedProduto.produto;
+      const subtotal = produto.preco * quantidade;
+      setCarrinho([...carrinho, { ...produto, quantidade, subtotal, precoOriginal: produto.preco }]);
+      setTotal(total + subtotal);
+      setPesoOuQuantidade('');
+      setSelectedProduto(null);
+      setFeedback('Item adicionado ao carrinho.');
+      
+      // Limpa a mensagem de sucesso após 2 segundos
+      setTimeout(() => {
+        if (feedback === 'Item adicionado ao carrinho.') {
+          setFeedback('');
+        }
+      }, 2000);
+    } catch (error) {
+      setFeedback('Erro ao adicionar item ao carrinho. Tente novamente.');
+    }
   };
 
   const abrirModalEditar = (index: number) => {
-    setEditItem({ index, ...carrinho[index] });
-    setModalOpen('editar');
+    if (index >= 0 && index < carrinho.length) {
+      setEditItem({ index, ...carrinho[index] });
+      setModalOpen('editar');
+    } else {
+      setFeedback('Erro ao editar item. Índice inválido.');
+    }
   };
 
   const salvarEdicao = (quantidade: number, preco: number, justificativa: string) => {
-    if (!editItem) return;
+    if (!editItem) {
+      setFeedback('Erro ao salvar: nenhum item selecionado.');
+      return;
+    }
+    
     if (isNaN(quantidade) || quantidade <= 0) {
       setFeedback('Peso/quantidade deve ser um número positivo.');
       return;
     }
+    
     if (isNaN(preco) || preco <= 0) {
       setFeedback('O preço deve ser um número positivo.');
       return;
     }
+    
     if (preco !== editItem.precoOriginal && !justificativa) {
       setFeedback('Justificativa é obrigatória para alteração de preço.');
       return;
     }
-    const novosItens = [...carrinho];
-    const item = novosItens[editItem.index];
-    const subtotalAnterior = item.subtotal;
-    item.quantidade = quantidade;
-    item.preco = preco;
-    item.subtotal = preco * quantidade;
-    if (preco !== item.precoOriginal) item.justificativa = justificativa;
-    else delete item.justificativa;
-    setCarrinho(novosItens);
-    setTotal(total - subtotalAnterior + item.subtotal);
-    setModalOpen(null);
-    setFeedback('Item editado com sucesso.');
+    
+    try {
+      setCarregando(true);
+      const novosItens = [...carrinho];
+      const item = novosItens[editItem.index];
+      const subtotalAnterior = item.subtotal;
+      item.quantidade = quantidade;
+      item.preco = preco;
+      item.subtotal = preco * quantidade;
+      if (preco !== item.precoOriginal) item.justificativa = justificativa;
+      else delete item.justificativa;
+      
+      // Simulamos um pequeno delay para melhorar a experiência do usuário
+      setTimeout(() => {
+        setCarrinho(novosItens);
+        setTotal(total - subtotalAnterior + item.subtotal);
+        setModalOpen(null);
+        setFeedback('Item atualizado com sucesso.');
+        setCarregando(false);
+        
+        // Limpa a mensagem de sucesso após 2 segundos
+        setTimeout(() => {
+          if (feedback === 'Item atualizado com sucesso.') {
+            setFeedback('');
+          }
+        }, 2000);
+      }, 500);
+    } catch (error) {
+      setCarregando(false);
+      setFeedback('Erro ao atualizar item. Tente novamente.');
+    }
   };
 
   const removerItem = (index: number) => {
-    const item = carrinho[index];
-    setCarrinho(carrinho.filter((_, i) => i !== index));
-    setTotal(total - item.subtotal);
-    setFeedback('Item removido do carrinho.');
+    try {
+      if (index >= 0 && index < carrinho.length) {
+        const item = carrinho[index];
+        setCarrinho(carrinho.filter((_, i) => i !== index));
+        setTotal(total - item.subtotal);
+        setFeedback('Item removido do carrinho.');
+        
+        // Limpa a mensagem de sucesso após 2 segundos
+        setTimeout(() => {
+          if (feedback === 'Item removido do carrinho.') {
+            setFeedback('');
+          }
+        }, 2000);
+      } else {
+        setFeedback('Erro ao remover item. Índice inválido.');
+      }
+    } catch (error) {
+      setFeedback('Erro ao remover item. Tente novamente.');
+    }
   };
 
   const finalizarVenda = async (imprimir?: boolean) => {
@@ -119,14 +195,19 @@ export function useVendas() {
       setFeedback('O carrinho está vazio.');
       return;
     }
+    
     if (!validarPagamentoVenda({ formaPagamento, valorPagoInput, total, parcelas, setFeedback })) return;
-    const itensParaEnviar = carrinho.map(item => ({
-      nome: item.nome,
-      preco: Number(item.preco),
-      quantidade: item.quantidade,
-      productId: item._id
-    }));
+    
+    setCarregando(true);
+    
     try {
+      const itensParaEnviar = carrinho.map(item => ({
+        nome: item.nome,
+        preco: Number(item.preco),
+        quantidade: item.quantidade,
+        productId: item._id
+      }));
+      
       await postVenda({
         itens: itensParaEnviar,
         total: total.toFixed(2),
@@ -137,9 +218,12 @@ export function useVendas() {
           parcelas: formaPagamento === 'credito' ? parcelas : undefined
         }
       });
+      
       if (imprimir) {
         gerarPdfVenda(carrinho, total);
       }
+      
+      // Resetar o estado
       setCarrinho([]);
       setTotal(0);
       setValorPagoInput('');
@@ -148,16 +232,50 @@ export function useVendas() {
       setFormaPagamento('dinheiro');
       setModalOpen(null);
       setFeedback('Venda finalizada com sucesso!');
+      setCarregando(false);
+      
+      // Limpa a mensagem de sucesso após 3 segundos
+      setTimeout(() => {
+        if (feedback === 'Venda finalizada com sucesso!') {
+          setFeedback('');
+        }
+      }, 3000);
     } catch (e: any) {
-      setFeedback('Erro ao finalizar venda: ' + (e?.response?.data?.erro || e?.response?.data?.detalhes?.message || 'Erro desconhecido'));
+      setCarregando(false);
+      const mensagemErro = e?.response?.data?.erro || 
+                        e?.response?.data?.detalhes?.message || 
+                        'Erro de comunicação com o servidor';
+      setFeedback('Erro ao finalizar venda: ' + mensagemErro);
     }
   };
 
   const cancelarVenda = () => {
-    setCarrinho([]);
-    setTotal(0);
-    setModalOpen(null);
-    setFeedback('Venda cancelada.');
+    if (carrinho.length === 0) {
+      setFeedback('Não há itens para cancelar.');
+      return;
+    }
+    
+    setCarregando(true);
+    
+    // Simulamos um pequeno delay para melhorar a experiência do usuário
+    setTimeout(() => {
+      setCarrinho([]);
+      setTotal(0);
+      setModalOpen(null);
+      setFormaPagamento('dinheiro');
+      setValorPagoInput('');
+      setTroco(0);
+      setParcelas(1);
+      setFeedback('Venda cancelada com sucesso.');
+      setCarregando(false);
+      
+      // Limpa a mensagem após 2 segundos
+      setTimeout(() => {
+        if (feedback === 'Venda cancelada com sucesso.') {
+          setFeedback('');
+        }
+      }, 2000);
+    }, 500);
   };
 
   // Para uso no componente de pagamento
@@ -172,6 +290,7 @@ export function useVendas() {
     feedback,
     modalOpen,
     editItem,
+    carregando,
     produtoOptions,
     setPesoOuQuantidade,
     setSelectedProduto,

@@ -1,46 +1,119 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { CheckCircle, Warning, X, Info } from 'phosphor-react';
+
+type FeedbackType = 'success' | 'error' | 'warning' | 'info';
 
 interface ApiFeedbackProps {
-  loading?: boolean;
-  error?: string | null;
-  children?: React.ReactNode;
+  message: string;
+  type?: FeedbackType;
+  duration?: number; // duração em milissegundos
+  onClose?: () => void;
+  position?: 'top' | 'bottom'; // posição na tela
+  fullWidth?: boolean; // se deve ocupar toda a largura
+  showIcon?: boolean;
+  showCloseButton?: boolean;
+  solution?: string; // sugestão de solução para o erro
 }
 
-export const ApiFeedback: React.FC<ApiFeedbackProps> = ({ 
-  loading, 
-  error, 
-  children 
+const getFeedbackIcon = (type: FeedbackType) => {
+  switch (type) {
+    case 'success':
+      return <CheckCircle weight="fill" size={24} />;
+    case 'error':
+      return <Warning weight="fill" size={24} />;
+    case 'warning':
+      return <Warning size={24} />;
+    case 'info':
+      return <Info size={24} />;
+    default:
+      return null;
+  }
+};
+
+const getFeedbackColor = (type: FeedbackType) => {
+  switch (type) {
+    case 'success':
+      return 'bg-success/10 text-success border-success/20';
+    case 'error':
+      return 'bg-danger/10 text-danger border-danger/20';
+    case 'warning':
+      return 'bg-warning/10 text-warning border-warning/20';
+    case 'info':
+      return 'bg-primary/10 text-primary border-primary/20';
+    default:
+      return 'bg-primary/10 text-primary border-primary/20';
+  }
+};
+
+const ApiFeedback: React.FC<ApiFeedbackProps> = ({
+  message,
+  type = 'info',
+  duration = 0, // 0 significa que não irá sumir automaticamente
+  onClose,
+  position = 'top',
+  fullWidth = false,
+  showIcon = true,
+  showCloseButton = true,
+  solution
 }) => {
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3 text-gray-600">Carregando...</span>
-      </div>
-    );
-  }
+  const [visible, setVisible] = useState(true);
 
-  if (error) {
-    return (
-      <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-4">
-        <div className="flex">
-          <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-            </svg>
+  useEffect(() => {
+    if (duration > 0) {
+      const timer = setTimeout(() => {
+        setVisible(false);
+        if (onClose) onClose();
+      }, duration);
+      return () => clearTimeout(timer);
+    }
+  }, [duration, onClose]);
+
+  if (!visible || !message) return null;
+
+  const handleClose = () => {
+    setVisible(false);
+    if (onClose) onClose();
+  };
+
+  const positionClasses = position === 'top'
+    ? 'top-0 mt-4'
+    : 'bottom-0 mb-4';
+
+  const widthClasses = fullWidth
+    ? 'w-full rounded-none'
+    : 'max-w-lg rounded-lg mx-auto';
+
+  return (
+    <div className={`fixed ${positionClasses} left-1/2 transform -translate-x-1/2 z-50 ${widthClasses} shadow-lg transition-all duration-300`}>
+      <div className={`flex items-start gap-3 p-4 border ${getFeedbackColor(type)}`}>
+        {showIcon && (
+          <div className="flex-shrink-0 mt-0.5">
+            {getFeedbackIcon(type)}
           </div>
-          <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800">
-              Erro na operação
-            </h3>
-            <div className="mt-2 text-sm text-red-700">
-              {error}
+        )}
+        
+        <div className="flex-1">
+          <div className="font-medium">{message}</div>
+          
+          {solution && (
+            <div className="mt-1 text-sm opacity-90">
+              {solution}
             </div>
-          </div>
+          )}
         </div>
+        
+        {showCloseButton && (
+          <button 
+            onClick={handleClose}
+            className="flex-shrink-0 p-1 rounded-md hover:bg-black/5 transition-colors"
+            aria-label="Fechar"
+          >
+            <X size={20} />
+          </button>
+        )}
       </div>
-    );
-  }
+    </div>
+  );
+};
 
-  return <>{children}</>;
-}; 
+export default ApiFeedback; 

@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useUIPreferences } from '../contexts/UIPreferencesContext';
 import Header from './Header';
 import Sidebar from './Sidebar';
+import clsx from 'clsx';
 
 export default function LayoutBase({ children }: { children: React.ReactNode }) {
   const [sidebarMinimizada, setSidebarMinimizada] = useState(true);
-  const { sidebarMode } = useUIPreferences();
+  const { sidebarMode, sidebarMobileOpen } = useUIPreferences();
 
   useEffect(() => {
     if (sidebarMode === 'fixed') return;
@@ -13,17 +14,26 @@ export default function LayoutBase({ children }: { children: React.ReactNode }) 
     setSidebarMinimizada(true);
   }, [sidebarMode]);
 
+  const mainContentClasses = clsx(
+    'flex-1 flex flex-col transition-all duration-normal',
+    'ml-0', // Mobile default
+    {
+      'md:ml-20': sidebarMinimizada,
+      'md:ml-64': !sidebarMinimizada
+    }
+  );
+
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-950 transition-colors">
+    <div className="flex h-screen bg-background-app transition-colors">
       <Sidebar
         minimizada={sidebarMinimizada}
         setMinimizada={setSidebarMinimizada}
       />
-      <div
-        className={`flex-1 flex flex-col transition-all duration-300 ${sidebarMinimizada ? 'ml-20' : 'ml-64'}`}
-      >
+      <div className={mainContentClasses}>
         <Header />
-        <main className="flex-1 overflow-y-auto p-8 bg-white dark:bg-gray-900 transition-colors">{children}</main>
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 lg:p-10">
+          {children}
+        </main>
       </div>
     </div>
   );

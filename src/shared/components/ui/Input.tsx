@@ -5,7 +5,7 @@ import clsx from 'clsx';
 type InputVariant = 'default' | 'floating' | 'integrated';
 type InputSize = 'sm' | 'md' | 'lg';
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   label?: string;
   error?: string;
   helperText?: string;
@@ -17,11 +17,11 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
 
 const sizeClasses: Record<InputSize, string> = {
   sm: 'h-9 text-sm',
-  md: 'h-11 text-sm',
+  md: 'h-11 text-base',
   lg: 'h-12 text-base',
 };
 
-const baseInput = 'block w-full rounded-md border border-gray-300 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary disabled:opacity-60';
+const baseInput = 'block w-full rounded-md border border-border bg-background-component placeholder-text-disabled text-text-primary focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-soft disabled:opacity-60';
 
 const Input: React.FC<InputProps> = ({
   className,
@@ -36,33 +36,38 @@ const Input: React.FC<InputProps> = ({
   ...props
 }) => {
   const inputId = id || React.useId();
-  const inputClasses = twMerge(clsx(baseInput, sizeClasses[size], className));
+  const inputClasses = twMerge(clsx(
+    baseInput, 
+    sizeClasses[size], 
+    error && 'border-danger focus:border-danger focus:ring-danger/20',
+    className
+  ));
 
   return (
     <div className="w-full">
       {label && (
-        <label htmlFor={inputId} className="block mb-1 text-sm font-medium text-neutral-900">
+        <label htmlFor={inputId} className="block mb-2 text-label font-medium text-text-primary">
           {label}
         </label>
       )}
       <div className="relative flex items-stretch">
         {leftAddon && (
-          <span className="inline-flex items-center px-3 text-gray-500 bg-gray-100 border border-r-0 border-gray-300 rounded-l-md">
+          <span className="inline-flex items-center px-3 text-text-secondary bg-background-app border border-r-0 border-border rounded-l-md">
             {leftAddon}
           </span>
         )}
         <input id={inputId} className={inputClasses} {...props} />
         {rightAddon && (
-          <span className="inline-flex items-center px-3 text-gray-500 bg-gray-100 border border-l-0 border-gray-300 rounded-r-md">
+          <span className="inline-flex items-center px-3 text-text-secondary bg-background-app border border-l-0 border-border rounded-r-md">
             {rightAddon}
           </span>
         )}
       </div>
       {helperText && !error && (
-        <p className="mt-1 text-xs text-gray-500">{helperText}</p>
+        <p className="mt-1 text-caption text-text-secondary">{helperText}</p>
       )}
       {error && (
-        <p className="mt-1 text-xs text-red-600">{error}</p>
+        <p className="mt-1 text-caption text-danger">{error}</p>
       )}
     </div>
   );

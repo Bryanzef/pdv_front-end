@@ -2,6 +2,11 @@ import React, { useState } from 'react';
 import { Usuario } from '../config/types';
 import TabelaUsuarios from './components/TabelaUsuarios';
 import { useUsuarios } from './hooks/useUsuarios';
+import Card from '../shared/components/ui/Card';
+import Button from '../shared/components/ui/Button';
+import Modal from '../shared/Modal';
+import Input from '../shared/components/ui/Input';
+import { UserPlus, PencilSimple, UserCirclePlus, UserCircleMinus, Trash } from 'phosphor-react';
 
 const Usuarios: React.FC = () => {
   const { usuarios, page, setPage, total, totalPages, loading, adicionarUsuario, atualizarUsuario, ativar, inativar, remover } = useUsuarios();
@@ -9,87 +14,197 @@ const Usuarios: React.FC = () => {
   const [usuarioSelecionado, setUsuarioSelecionado] = useState<Usuario | null>(null);
   const [confirmarExclusao, setConfirmarExclusao] = useState<Usuario | null>(null);
 
+  // Estados para o formulário
+  const [nome, setNome] = useState('');
+  const [email, setEmail] = useState('');
+  const [perfil, setPerfil] = useState<'usuario' | 'admin'>('usuario');
+  const [senha, setSenha] = useState('');
+
   function handleEditar(usuario: Usuario) {
     setUsuarioSelecionado(usuario);
+    setNome(usuario.nome);
+    setEmail(usuario.email);
+    setPerfil(usuario.perfil as 'usuario' | 'admin');
+    setSenha('');
     setModalAberto('editar');
   }
+  
   function handleAtivar(usuario: Usuario) {
     ativar(usuario.id);
   }
+  
   function handleInativar(usuario: Usuario) {
     inativar(usuario.id);
   }
+  
   function handleExcluir(usuario: Usuario) {
     setConfirmarExclusao(usuario);
   }
+  
   function handleConfirmarExclusao() {
     if (confirmarExclusao) remover(confirmarExclusao.id);
     setConfirmarExclusao(null);
   }
+  
   function handleAbrirCriar() {
     setUsuarioSelecionado(null);
+    setNome('');
+    setEmail('');
+    setPerfil('usuario');
+    setSenha('');
     setModalAberto('criar');
   }
-  function handleSalvarUsuario(dados: any) {
+  
+  function handleSalvarUsuario() {
+    const dados = {
+      nome,
+      email,
+      perfil,
+      senha: senha || undefined // Se senha estiver vazia no modo editar, não enviar
+    };
+    
     if (modalAberto === 'criar') adicionarUsuario(dados);
     else if (modalAberto === 'editar' && usuarioSelecionado) atualizarUsuario(usuarioSelecionado.id, dados);
+    
     setModalAberto(null);
   }
 
   return (
-    <div className="bg-white p-8 rounded-xl shadow-lg max-w-5xl mx-auto">
-      <h2 className="text-3xl font-bold mb-6 text-green-900 flex items-center gap-2">
-        <span>👤</span> Usuários do Sistema
-      </h2>
-      <button className="mb-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700" onClick={handleAbrirCriar}>Novo Usuário</button>
-      {/* Removido bloco de feedback visual, agora apenas toast */}
-      <TabelaUsuarios
-        usuarios={usuarios}
-        page={page}
-        setPage={setPage}
-        total={total}
-        totalPages={totalPages}
-        loading={loading}
-        onEditar={handleEditar}
-        onAtivar={handleAtivar}
-        onInativar={handleInativar}
-        onExcluir={handleExcluir}
-      />
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <h1 className="text-h1 font-bold text-text-primary">Usuários do Sistema</h1>
+        
+        <Button 
+          variant="primary" 
+          leftIcon={<UserPlus size={18} />}
+          onClick={handleAbrirCriar}
+        >
+          Novo Usuário
+        </Button>
+      </div>
+      
+      <Card>
+        <div className="flex items-center gap-2 mb-4 text-text-primary">
+          <h2 className="text-h3 font-semibold">Lista de Usuários</h2>
+          <span className="text-text-secondary">({total} usuários)</span>
+        </div>
+        
+        <TabelaUsuarios
+          usuarios={usuarios}
+          page={page}
+          setPage={setPage}
+          total={total}
+          totalPages={totalPages}
+          loading={loading}
+          onEditar={handleEditar}
+          onAtivar={handleAtivar}
+          onInativar={handleInativar}
+          onExcluir={handleExcluir}
+        />
+      </Card>
+      
       {/* Modal de criar/editar usuário */}
-      {modalAberto && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded shadow-lg min-w-[350px]">
-            <h3 className="text-xl font-bold mb-4">{modalAberto === 'criar' ? 'Novo Usuário' : 'Editar Usuário'}</h3>
-            {/* Formulário simplificado */}
-            <form onSubmit={e => { e.preventDefault(); const form = e.target as any; handleSalvarUsuario({ nome: form.nome.value, email: form.email.value, perfil: form.perfil.value, senha: form.senha.value }); }}>
-              <input name="nome" defaultValue={usuarioSelecionado?.nome || ''} placeholder="Nome" className="block w-full mb-2 p-2 border rounded" required />
-              <input name="email" type="email" defaultValue={usuarioSelecionado?.email || ''} placeholder="Email" className="block w-full mb-2 p-2 border rounded" required />
-              <select name="perfil" defaultValue={usuarioSelecionado?.perfil || 'usuario'} className="block w-full mb-2 p-2 border rounded">
+      <Modal
+        isOpen={modalAberto !== null}
+        onClose={() => setModalAberto(null)}
+        title={modalAberto === 'criar' ? 'Novo Usuário' : 'Editar Usuário'}
+        content={
+          <div className="space-y-4">
+            <Input
+              label="Nome"
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
+              placeholder="Nome completo"
+              required
+              leftAddon={<PencilSimple size={18} className="text-text-secondary" />}
+            />
+            
+            <Input
+              label="Email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="email@exemplo.com"
+              required
+              leftAddon={<span className="text-text-secondary">@</span>}
+            />
+            
+            <div>
+              <label className="block text-label font-medium text-text-primary mb-2">
+                Perfil
+              </label>
+              <select
+                value={perfil}
+                onChange={(e) => setPerfil(e.target.value as 'usuario' | 'admin')}
+                className="block w-full rounded-md border border-border bg-background-component placeholder-text-disabled text-text-primary p-3 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-soft"
+              >
                 <option value="usuario">Usuário</option>
                 <option value="admin">Administrador</option>
               </select>
-              <input name="senha" type="password" placeholder="Senha" className="block w-full mb-2 p-2 border rounded" minLength={6} required={modalAberto === 'criar'} />
-              <div className="flex gap-2 justify-end mt-4">
-                <button type="button" className="px-4 py-2 bg-gray-200 rounded" onClick={() => setModalAberto(null)}>Cancelar</button>
-                <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Salvar</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-      {/* Modal de confirmação de exclusão */}
-      {confirmarExclusao && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded shadow-lg min-w-[350px]">
-            <h3 className="text-xl font-bold mb-4">Excluir Usuário</h3>
-            <p>Tem certeza que deseja excluir o usuário <b>{confirmarExclusao.nome}</b>?</p>
-            <div className="flex gap-2 justify-end mt-4">
-              <button className="px-4 py-2 bg-gray-200 rounded" onClick={() => setConfirmarExclusao(null)}>Cancelar</button>
-              <button className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700" onClick={handleConfirmarExclusao}>Excluir</button>
             </div>
+            
+            <Input
+              label={modalAberto === 'criar' ? "Senha" : "Senha (deixe em branco para não alterar)"}
+              type="password"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+              placeholder="Senha segura"
+              required={modalAberto === 'criar'}
+              minLength={6}
+            />
           </div>
-        </div>
-      )}
+        }
+        footer={
+          <div className="flex gap-3 justify-end">
+            <Button 
+              variant="ghost" 
+              onClick={() => setModalAberto(null)}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              variant="primary"
+              onClick={handleSalvarUsuario}
+            >
+              Salvar
+            </Button>
+          </div>
+        }
+      />
+      
+      {/* Modal de confirmação de exclusão */}
+      <Modal
+        isOpen={confirmarExclusao !== null}
+        onClose={() => setConfirmarExclusao(null)}
+        title="Excluir Usuário"
+        content={
+          confirmarExclusao && (
+            <div className="py-2">
+              <p className="text-text-primary mb-4">
+                Tem certeza que deseja excluir o usuário <span className="font-semibold">{confirmarExclusao.nome}</span>?
+              </p>
+              <p className="text-danger text-sm">Esta ação não pode ser desfeita.</p>
+            </div>
+          )
+        }
+        footer={
+          <div className="flex gap-3 justify-end">
+            <Button 
+              variant="ghost" 
+              onClick={() => setConfirmarExclusao(null)}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              variant="danger"
+              onClick={handleConfirmarExclusao}
+              leftIcon={<Trash size={18} />}
+            >
+              Excluir
+            </Button>
+          </div>
+        }
+      />
     </div>
   );
 };

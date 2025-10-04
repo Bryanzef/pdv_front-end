@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Modal from '../shared/Modal';
 import FormularioProduto from './components/FormularioProduto';
 import TabelaProdutos from './components/TabelaProdutos';
 import { useProdutos } from './hooks/useProdutos';
+import Card from '../shared/components/ui/Card';
+import Button from '../shared/components/ui/Button';
+import { Package, Plus, X } from 'phosphor-react';
+import { Produto } from './types';
 
 const Produtos: React.FC = () => {
   const {
@@ -28,50 +32,135 @@ const Produtos: React.FC = () => {
     totalPages
   } = useProdutos();
 
+  const [showForm, setShowForm] = useState(false);
+
+  // Abre o formulário e reseta os campos quando clicar em "Novo Produto"
+  const handleNovoClick = () => {
+    if (editandoId) {
+      setNome('');
+      setPreco('');
+      setTipo('peso');
+    }
+    setShowForm(true);
+  };
+
+  // Abre o formulário quando for editar
+  const handleEditarProduto = (produto: Produto) => {
+    editarProduto(produto);
+    setShowForm(true);
+  };
+
+  // Fecha o formulário
+  const handleFecharForm = () => {
+    setShowForm(false);
+  };
+
   return (
-    <div className="bg-white p-8 rounded-xl shadow-lg max-w-5xl mx-auto">
-      <h2 className="text-3xl font-bold mb-6 text-green-900 flex items-center gap-2">
-        <span>📦</span> Gerenciar Produtos
-      </h2>
-      <FormularioProduto
-        nome={nome}
-        setNome={setNome}
-        preco={preco}
-        setPreco={setPreco}
-        tipo={tipo}
-        setTipo={setTipo}
-        onSubmit={cadastrarOuAtualizar}
-        editandoId={editandoId}
-        estoque={editandoId ? produtos.find(p => p._id === editandoId)?.estoque : undefined}
-        ativo={editandoId ? produtos.find(p => p._id === editandoId)?.ativo : undefined}
-      />
+    <div className="space-y-6">
+      {/* Cabeçalho com botão de adicionar */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <h1 className="text-h1 font-bold text-text-primary">Produtos</h1>
+        
+        <Button 
+          variant="primary" 
+          leftIcon={<Plus size={18} />}
+          onClick={handleNovoClick}
+        >
+          Novo Produto
+        </Button>
+      </div>
+
+      {/* Formulário em card */}
+      {showForm && (
+        <Card>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-h3 font-semibold text-text-primary">
+              {editandoId ? "Editar Produto" : "Novo Produto"}
+            </h2>
+            <button 
+              onClick={handleFecharForm}
+              className="text-text-secondary hover:text-text-primary"
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          <FormularioProduto
+            nome={nome}
+            setNome={setNome}
+            preco={preco}
+            setPreco={setPreco}
+            tipo={tipo}
+            setTipo={setTipo}
+            onSubmit={() => {
+              cadastrarOuAtualizar();
+              // Se não estiver editando, fechar o formulário após cadastrar
+              if (!editandoId) setShowForm(false);
+            }}
+            editandoId={editandoId}
+            estoque={editandoId ? produtos.find(p => p._id === editandoId)?.estoque : undefined}
+            ativo={editandoId ? produtos.find(p => p._id === editandoId)?.ativo : undefined}
+          />
+        </Card>
+      )}
+
+      {/* Feedback */}
       {feedback && (
-        <div className={`my-2 p-2 rounded text-center font-medium ${feedback.includes('sucesso') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+        <div className={`p-3 rounded-md text-center font-medium ${
+          feedback.includes('sucesso') 
+            ? 'bg-success/10 text-success' 
+            : 'bg-danger/10 text-danger'
+        }`}>
           {feedback}
         </div>
       )}
-      <TabelaProdutos
-        produtos={produtos}
-        filtro={filtro}
-        setFiltro={setFiltro}
-        editarProduto={editarProduto}
-        setModalExcluir={setModalExcluir}
-        page={page}
-        setPage={setPage}
-        total={total}
-        totalPages={totalPages}
-      />
+
+      {/* Tabela em card */}
+      <Card>
+        <div className="flex items-center gap-2 mb-4 text-text-primary">
+          <Package size={20} />
+          <h2 className="text-h3 font-semibold">Lista de Produtos</h2>
+        </div>
+        
+        <TabelaProdutos
+          produtos={produtos}
+          filtro={filtro}
+          setFiltro={setFiltro}
+          editarProduto={handleEditarProduto}
+          setModalExcluir={setModalExcluir}
+          page={page}
+          setPage={setPage}
+          total={total}
+          totalPages={totalPages}
+        />
+      </Card>
+
+      {/* Modal de confirmação de exclusão */}
       <Modal
         isOpen={modalExcluir !== null}
         onClose={() => setModalExcluir(null)}
         title="Excluir Produto"
         content={
           <div>
-            <p>Deseja excluir este produto?</p>
-            <div className="flex gap-2 mt-4 justify-end">
-              <button onClick={() => setModalExcluir(null)} className="bg-gray-400 text-white px-4 py-2 rounded">Cancelar</button>
-              <button onClick={excluirProduto} className="bg-red-600 text-white px-4 py-2 rounded">Excluir</button>
-            </div>
+            <p className="text-text-primary mb-4">
+              Deseja realmente excluir este produto? Esta ação não pode ser desfeita.
+            </p>
+          </div>
+        }
+        footer={
+          <div className="flex gap-3 justify-end">
+            <Button 
+              variant="ghost" 
+              onClick={() => setModalExcluir(null)}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              variant="danger"
+              onClick={excluirProduto}
+            >
+              Excluir
+            </Button>
           </div>
         }
       />
