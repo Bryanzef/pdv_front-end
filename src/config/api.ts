@@ -6,6 +6,13 @@ const API_BASE_URL = import.meta.env.DEV
   ? '/api' 
   : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api`;
 
+// Debug: verificar se a variável está sendo carregada
+console.log('🔧 Debug API:', {
+  isDev: import.meta.env.DEV,
+  viteApiUrl: import.meta.env.VITE_API_URL,
+  finalUrl: API_BASE_URL
+});
+
 // Criando instância do Axios com configurações padrão
 const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
