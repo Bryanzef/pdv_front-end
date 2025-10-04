@@ -1,5 +1,6 @@
 import React, { createContext, ReactNode, useContext, useEffect, useReducer } from 'react';
 import type { Usuario } from '../config/types';
+import { api } from '../config';
 
 interface AuthState {
   usuario: Usuario | null;
@@ -125,19 +126,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       dispatch({ type: 'LOGIN_INICIADO' });
 
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, senha }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.mensagem || 'Erro no login');
-      }
+      const response = await api.post('/auth/login', { email, senha });
+      const data = response.data;
 
       dispatch({
         type: 'LOGIN_SUCESSO',
@@ -165,18 +155,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   // Registrar (apenas admin)
-  const registrar = async (nome: string, email: string, senha: string, role: 'admin' | 'usuario' = 'usuario') => {
+  const registrar = async (nome: string, email: string, senha: string, role: 'admin' | 'usuario' = 'usuario') : Promise<void> => {
     try {
-      const response = await apiRequest('/api/auth/registro', {
-        method: 'POST',
-        body: JSON.stringify({ nome, email, senha, role }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.mensagem || 'Erro no registro');
-      }
+      const response = await api.post('/auth/registro', { nome, email, senha, role });
+      const data = response.data;
 
       // Se o registro for bem-sucedido, fazer login automaticamente
       dispatch({
@@ -194,16 +176,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Alterar senha
   const alterarSenha = async (senhaAtual: string, novaSenha: string) => {
     try {
-      const response = await apiRequest('/api/auth/alterar-senha', {
-        method: 'POST',
-        body: JSON.stringify({ senhaAtual, novaSenha }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.mensagem || 'Erro ao alterar senha');
-      }
+      const response = await api.post('/auth/alterar-senha', { senhaAtual, novaSenha });
+      const data = response.data;
 
       dispatch({ type: 'ALTERAR_SENHA_SUCESSO' });
     } catch (error) {
@@ -221,14 +195,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     try {
-      const response = await apiRequest('/api/auth/me');
-      
-      if (!response.ok) {
-        dispatch({ type: 'TOKEN_INVALIDO' });
-        return;
-      }
-
-      const data = await response.json();
+      const response = await api.get('/auth/me');
+      const data = response.data;
       
       dispatch({
         type: 'TOKEN_VERIFICADO',
